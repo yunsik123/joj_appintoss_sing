@@ -1,0 +1,25 @@
+{
+  "name": "karaoke-recommend",
+  "version": "1.0.0",
+  "description": "노래방 상황별 노래 추천 앱",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "ait:dev": "npx granite dev",
+    "ait:build": "npx granite build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "@apps-in-toss/web-framework": "^1.7.0",
+    "@toss/tds-mobile": "^2.2.1"
+  }
+}
