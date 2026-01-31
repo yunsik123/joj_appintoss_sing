@@ -23,382 +23,175 @@
       </div>
     </section>
 
-    <!-- Screen 2: 나이 선택 -->
-    <section class="screen" id="screen-age">
-      <div class="progress-indicator">
-        <div class="progress-dots">
-          <span class="dot active"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
+    <!-- Screen 2: 프로필 입력 -->
+    <section class="screen" id="screen-profile">
+      <h2 class="screen-title">프로필을 알려주세요 👋</h2>
+      <p class="screen-subtitle">더 정확한 추천을 위해 필요해요</p>
+
+      <div class="input-section">
+        <label class="input-label">성별</label>
+        <div class="option-grid grid-2">
+          <button class="option-btn" data-field="유저성별" data-value="남성">남성</button>
+          <button class="option-btn" data-field="유저성별" data-value="여성">여성</button>
         </div>
       </div>
 
-      <h2 class="screen-title">어떤 연령대 노래를 원하세요? 👋</h2>
-      <p class="screen-subtitle">연령대에 맞는 노래를 추천해드려요</p>
-
-      <div class="selection-list">
-        <button class="selection-card" data-field="나이" data-value="10대">
-          <div class="selection-emoji">🧒</div>
-          <div class="selection-content">
-            <div class="selection-title">10대</div>
-            <div class="selection-desc">아이돌, 최신 트렌드</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="나이" data-value="20대">
-          <div class="selection-emoji">👩‍🎓</div>
-          <div class="selection-content">
-            <div class="selection-title">20대</div>
-            <div class="selection-desc">케이팝, 힙합</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="나이" data-value="30대">
-          <div class="selection-emoji">👨‍💼</div>
-          <div class="selection-content">
-            <div class="selection-title">30대</div>
-            <div class="selection-desc">2010년대 인기곡</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="나이" data-value="40대">
-          <div class="selection-emoji">👨‍👩‍👧</div>
-          <div class="selection-content">
-            <div class="selection-title">40대</div>
-            <div class="selection-desc">2000년대 명곡</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="나이" data-value="50대+">
-          <div class="selection-emoji">👴</div>
-          <div class="selection-content">
-            <div class="selection-title">50대+</div>
-            <div class="selection-desc">트로트, 추억의 명곡</div>
-          </div>
-        </button>
-
-        <button class="selection-card skip-card" data-field="나이" data-value="null">
-          <div class="selection-emoji">✨</div>
-          <div class="selection-content">
-            <div class="selection-title">상관없음</div>
-            <div class="selection-desc">모든 연령대 OK</div>
-          </div>
-        </button>
-      </div>
-    </section>
-
-    <!-- Screen 3: 가수 성별 선택 -->
-    <section class="screen" id="screen-gender">
-      <div class="progress-indicator">
-        <div class="progress-dots">
-          <span class="dot active"></span>
-          <span class="dot active"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
+      <div class="input-section">
+        <label class="input-label">연령대</label>
+        <div class="option-grid grid-3">
+          <button class="option-btn" data-field="유저나이" data-value="10대">10대</button>
+          <button class="option-btn" data-field="유저나이" data-value="20대">20대</button>
+          <button class="option-btn" data-field="유저나이" data-value="30대">30대</button>
+          <button class="option-btn" data-field="유저나이" data-value="40대">40대</button>
+          <button class="option-btn" data-field="유저나이" data-value="50대+">50대+</button>
         </div>
       </div>
 
-      <h2 class="screen-title">어떤 가수 성별을 원하세요? 🎙️</h2>
-      <p class="screen-subtitle">가수 성별에 맞는 노래를 추천해요</p>
-
-      <div class="selection-list">
-        <button class="selection-card" data-field="가수성별" data-value="남">
-          <div class="selection-emoji">👨‍🎤</div>
-          <div class="selection-content">
-            <div class="selection-title">남자 가수</div>
-            <div class="selection-desc">남자 솔로 / 남성 그룹</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="가수성별" data-value="여">
-          <div class="selection-emoji">👩‍🎤</div>
-          <div class="selection-content">
-            <div class="selection-title">여자 가수</div>
-            <div class="selection-desc">여자 솔로 / 여성 그룹</div>
-          </div>
-        </button>
-
-        <button class="selection-card skip-card" data-field="가수성별" data-value="null">
-          <div class="selection-emoji">✨</div>
-          <div class="selection-content">
-            <div class="selection-title">상관없음</div>
-            <div class="selection-desc">혼성 그룹도 포함</div>
-          </div>
-        </button>
-      </div>
-
-      <button class="btn-secondary btn-back" id="btn-gender-back">← 이전</button>
-    </section>
-
-    <!-- Screen 4: 장르 선택 -->
-    <section class="screen" id="screen-genre">
-      <div class="progress-indicator">
-        <div class="progress-dots">
-          <span class="dot active"></span>
-          <span class="dot active"></span>
-          <span class="dot active"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
+      <div class="input-section">
+        <label class="input-label">노래방 방문 빈도</label>
+        <div class="option-grid grid-2">
+          <button class="option-btn" data-field="방문빈도" data-value="월 1회 미만">월 1회 미만</button>
+          <button class="option-btn" data-field="방문빈도" data-value="월 1-2회">월 1-2회</button>
+          <button class="option-btn" data-field="방문빈도" data-value="주 1회 이상">주 1회 이상</button>
         </div>
       </div>
 
-      <h2 class="screen-title">어떤 장르를 원하세요? 🎵</h2>
-      <p class="screen-subtitle">좋아하는 장르를 선택하세요</p>
-
-      <div class="selection-list">
-        <button class="selection-card" data-field="장르" data-value="발라드">
-          <div class="selection-emoji">💜</div>
-          <div class="selection-content">
-            <div class="selection-title">발라드</div>
-            <div class="selection-desc">감성적인 노래</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="장르" data-value="댄스">
-          <div class="selection-emoji">💃</div>
-          <div class="selection-content">
-            <div class="selection-title">댄스</div>
-            <div class="selection-desc">신나는 아이돌 음악</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="장르" data-value="힙합">
-          <div class="selection-emoji">🎤</div>
-          <div class="selection-content">
-            <div class="selection-title">힙합</div>
-            <div class="selection-desc">랩, 힙합</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="장르" data-value="락">
-          <div class="selection-emoji">🎸</div>
-          <div class="selection-content">
-            <div class="selection-title">락</div>
-            <div class="selection-desc">밴드 음악</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="장르" data-value="트로트">
-          <div class="selection-emoji">🌹</div>
-          <div class="selection-content">
-            <div class="selection-title">트로트</div>
-            <div class="selection-desc">한국 전통 가요</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="장르" data-value="R&B">
-          <div class="selection-emoji">🎷</div>
-          <div class="selection-content">
-            <div class="selection-title">R&B</div>
-            <div class="selection-desc">리듬 앤 블루스</div>
-          </div>
-        </button>
-
-        <button class="selection-card skip-card" data-field="장르" data-value="null">
-          <div class="selection-emoji">✨</div>
-          <div class="selection-content">
-            <div class="selection-title">상관없음</div>
-            <div class="selection-desc">모든 장르 OK</div>
-          </div>
-        </button>
+      <div class="input-section">
+        <label class="input-label">선호 장르 (복수 선택 가능)</label>
+        <div class="genre-tags">
+          <button class="genre-tag" data-field="선호장르" data-value="발라드">발라드</button>
+          <button class="genre-tag" data-field="선호장르" data-value="댄스">댄스</button>
+          <button class="genre-tag" data-field="선호장르" data-value="힙합">힙합</button>
+          <button class="genre-tag" data-field="선호장르" data-value="락">락</button>
+          <button class="genre-tag" data-field="선호장르" data-value="트로트">트로트</button>
+          <button class="genre-tag" data-field="선호장르" data-value="R&B">R&B</button>
+        </div>
       </div>
 
-      <button class="btn-secondary btn-back" id="btn-genre-back">← 이전</button>
+      <button class="btn-primary" id="btn-profile-next">다음</button>
     </section>
 
-    <!-- Screen 5: 분위기 선택 -->
-    <section class="screen" id="screen-mood">
+    <!-- Screen 3: 나이 + 가수성별 -->
+    <section class="screen" id="screen-age-gender">
       <div class="progress-indicator">
         <div class="progress-dots">
-          <span class="dot active"></span>
-          <span class="dot active"></span>
-          <span class="dot active"></span>
           <span class="dot active"></span>
           <span class="dot"></span>
           <span class="dot"></span>
         </div>
       </div>
 
-      <h2 class="screen-title">지금 원하는 분위기는? 🎶</h2>
-      <p class="screen-subtitle">분위기에 딱 맞는 곡을 찾아드려요</p>
+      <h2 class="screen-title">어떤 노래를 찾으세요?</h2>
+      <p class="screen-subtitle">연령대와 가수 성별을 선택하세요</p>
 
-      <div class="selection-list">
-        <button class="selection-card" data-field="분위기" data-value="신나는">
-          <div class="selection-emoji">🔥</div>
-          <div class="selection-content">
-            <div class="selection-title">신나는</div>
-            <div class="selection-desc">텐션 UP! 떼창</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="분위기" data-value="잔잔">
-          <div class="selection-emoji">🌙</div>
-          <div class="selection-content">
-            <div class="selection-title">잔잔한</div>
-            <div class="selection-desc">편안하고 차분하게</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="분위기" data-value="달달">
-          <div class="selection-emoji">💕</div>
-          <div class="selection-content">
-            <div class="selection-title">달달한</div>
-            <div class="selection-desc">설레는 연애송</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="분위기" data-value="애절한">
-          <div class="selection-emoji">💔</div>
-          <div class="selection-content">
-            <div class="selection-title">애절한</div>
-            <div class="selection-desc">이별, 슬픔</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="분위기" data-value="우울한">
-          <div class="selection-emoji">🌧️</div>
-          <div class="selection-content">
-            <div class="selection-title">우울한</div>
-            <div class="selection-desc">공감 되는 슬픔</div>
-          </div>
-        </button>
-
-        <button class="selection-card skip-card" data-field="분위기" data-value="null">
-          <div class="selection-emoji">✨</div>
-          <div class="selection-content">
-            <div class="selection-title">상관없음</div>
-            <div class="selection-desc">모든 분위기 OK</div>
-          </div>
-        </button>
+      <div class="input-section">
+        <label class="input-label">노래 연령대</label>
+        <div class="option-grid grid-3">
+          <button class="option-btn" data-field="나이" data-value="10대">10대</button>
+          <button class="option-btn" data-field="나이" data-value="20대">20대</button>
+          <button class="option-btn" data-field="나이" data-value="30대">30대</button>
+          <button class="option-btn" data-field="나이" data-value="40대">40대</button>
+          <button class="option-btn" data-field="나이" data-value="50대+">50대+</button>
+          <button class="option-btn skip-btn" data-field="나이" data-value="null">상관없음</button>
+        </div>
       </div>
 
-      <button class="btn-secondary btn-back" id="btn-mood-back">← 이전</button>
+      <div class="input-section">
+        <label class="input-label">가수 성별</label>
+        <div class="option-grid grid-3">
+          <button class="option-btn" data-field="가수성별" data-value="남">남자</button>
+          <button class="option-btn" data-field="가수성별" data-value="여">여자</button>
+          <button class="option-btn skip-btn" data-field="가수성별" data-value="null">상관없음</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-age-gender-next">다음</button>
+      <button class="btn-secondary btn-back" id="btn-age-gender-back">← 이전</button>
     </section>
 
-    <!-- Screen 6: 인원수 선택 -->
-    <section class="screen" id="screen-people">
+    <!-- Screen 4: 장르 + 분위기 -->
+    <section class="screen" id="screen-genre-mood">
       <div class="progress-indicator">
         <div class="progress-dots">
-          <span class="dot active"></span>
-          <span class="dot active"></span>
-          <span class="dot active"></span>
           <span class="dot active"></span>
           <span class="dot active"></span>
           <span class="dot"></span>
         </div>
       </div>
 
-      <h2 class="screen-title">몇 명이서 부르나요? 👥</h2>
-      <p class="screen-subtitle">인원에 맞는 노래를 추천해요</p>
+      <h2 class="screen-title">어떤 느낌의 노래?</h2>
+      <p class="screen-subtitle">장르와 분위기를 선택하세요</p>
 
-      <div class="selection-list">
-        <button class="selection-card" data-field="인원수" data-value="혼자">
-          <div class="selection-emoji">🧑</div>
-          <div class="selection-content">
-            <div class="selection-title">혼자</div>
-            <div class="selection-desc">솔로 무대</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="인원수" data-value="듀엣">
-          <div class="selection-emoji">👫</div>
-          <div class="selection-content">
-            <div class="selection-title">듀엣</div>
-            <div class="selection-desc">2명이서 함께</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="인원수" data-value="그룹">
-          <div class="selection-emoji">👨‍👩‍👧‍👦</div>
-          <div class="selection-content">
-            <div class="selection-title">그룹</div>
-            <div class="selection-desc">3명 이상 떼창</div>
-          </div>
-        </button>
-
-        <button class="selection-card skip-card" data-field="인원수" data-value="null">
-          <div class="selection-emoji">✨</div>
-          <div class="selection-content">
-            <div class="selection-title">상관없음</div>
-            <div class="selection-desc">모든 인원 OK</div>
-          </div>
-        </button>
+      <div class="input-section">
+        <label class="input-label">장르</label>
+        <div class="option-grid grid-3">
+          <button class="option-btn" data-field="장르" data-value="발라드">발라드</button>
+          <button class="option-btn" data-field="장르" data-value="댄스">댄스</button>
+          <button class="option-btn" data-field="장르" data-value="힙합">힙합</button>
+          <button class="option-btn" data-field="장르" data-value="락">락</button>
+          <button class="option-btn" data-field="장르" data-value="트로트">트로트</button>
+          <button class="option-btn" data-field="장르" data-value="R&B">R&B</button>
+          <button class="option-btn skip-btn" data-field="장르" data-value="null">상관없음</button>
+        </div>
       </div>
 
-      <button class="btn-secondary btn-back" id="btn-people-back">← 이전</button>
+      <div class="input-section">
+        <label class="input-label">분위기</label>
+        <div class="option-grid grid-3">
+          <button class="option-btn" data-field="분위기" data-value="신나는">신나는</button>
+          <button class="option-btn" data-field="분위기" data-value="잔잔">잔잔한</button>
+          <button class="option-btn" data-field="분위기" data-value="달달">달달한</button>
+          <button class="option-btn" data-field="분위기" data-value="애절한">애절한</button>
+          <button class="option-btn" data-field="분위기" data-value="우울한">우울한</button>
+          <button class="option-btn skip-btn" data-field="분위기" data-value="null">상관없음</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-genre-mood-next">다음</button>
+      <button class="btn-secondary btn-back" id="btn-genre-mood-back">← 이전</button>
     </section>
 
-    <!-- Screen 7: 상황 선택 -->
-    <section class="screen" id="screen-situation">
+    <!-- Screen 5: 인원수 + 상황 -->
+    <section class="screen" id="screen-people-situation">
       <div class="progress-indicator">
         <div class="progress-dots">
-          <span class="dot active"></span>
-          <span class="dot active"></span>
-          <span class="dot active"></span>
           <span class="dot active"></span>
           <span class="dot active"></span>
           <span class="dot active"></span>
         </div>
       </div>
 
-      <h2 class="screen-title">어떤 상황인가요? 🎯</h2>
-      <p class="screen-subtitle">상황에 맞는 노래를 추천해요</p>
+      <h2 class="screen-title">지금 상황은?</h2>
+      <p class="screen-subtitle">인원과 상황을 선택하세요</p>
 
-      <div class="selection-list">
-        <button class="selection-card" data-field="상황" data-value="감성충전">
-          <div class="selection-emoji">💜</div>
-          <div class="selection-content">
-            <div class="selection-title">감성충전</div>
-            <div class="selection-desc">감성적인 분위기</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="상황" data-value="분위기 띄우기">
-          <div class="selection-emoji">🔥</div>
-          <div class="selection-content">
-            <div class="selection-title">분위기 띄우기</div>
-            <div class="selection-desc">신나게 놀자!</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="상황" data-value="데이트">
-          <div class="selection-emoji">💕</div>
-          <div class="selection-content">
-            <div class="selection-title">데이트</div>
-            <div class="selection-desc">연인과 함께</div>
-          </div>
-        </button>
-
-        <button class="selection-card" data-field="상황" data-value="고음어필">
-          <div class="selection-emoji">🎤</div>
-          <div class="selection-content">
-            <div class="selection-title">고음어필</div>
-            <div class="selection-desc">실력 자랑!</div>
-          </div>
-        </button>
-
-        <button class="selection-card skip-card" data-field="상황" data-value="null">
-          <div class="selection-emoji">✨</div>
-          <div class="selection-content">
-            <div class="selection-title">상관없음</div>
-            <div class="selection-desc">모든 상황 OK</div>
-          </div>
-        </button>
+      <div class="input-section">
+        <label class="input-label">인원수</label>
+        <div class="option-grid grid-3">
+          <button class="option-btn" data-field="인원수" data-value="혼자">혼자</button>
+          <button class="option-btn" data-field="인원수" data-value="듀엣">듀엣</button>
+          <button class="option-btn" data-field="인원수" data-value="그룹">그룹</button>
+          <button class="option-btn skip-btn" data-field="인원수" data-value="null">상관없음</button>
+        </div>
       </div>
 
-      <button class="btn-secondary btn-back" id="btn-situation-back">← 이전</button>
+      <div class="input-section">
+        <label class="input-label">상황</label>
+        <div class="option-grid grid-2">
+          <button class="option-btn" data-field="상황" data-value="감성충전">감성충전</button>
+          <button class="option-btn" data-field="상황" data-value="분위기 띄우기">분위기 띄우기</button>
+          <button class="option-btn" data-field="상황" data-value="데이트">데이트</button>
+          <button class="option-btn" data-field="상황" data-value="고음어필">고음어필</button>
+          <button class="option-btn skip-btn" data-field="상황" data-value="null">상관없음</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-people-situation-next">추천받기</button>
+      <button class="btn-secondary btn-back" id="btn-people-situation-back">← 이전</button>
     </section>
 
-    <!-- Screen 8: 추천 결과 -->
+    <!-- Screen 6: 추천 결과 -->
     <section class="screen" id="screen-result">
       <div class="result-header">
-        <div class="result-icon">✨</div>
         <h2 class="result-title">추천 결과</h2>
       </div>
 
@@ -408,6 +201,22 @@
 
       <div class="result-list" id="resultList">
         <!-- 추천 노래가 여기 표시됩니다 -->
+      </div>
+
+      <!-- 후기 작성 섹션 -->
+      <div class="review-section">
+        <h3 class="review-title">추천이 어떠셨나요?</h3>
+        <textarea class="review-input" id="reviewInput" placeholder="후기를 남겨주세요 (선택사항)" maxlength="500"></textarea>
+        <div class="review-actions">
+          <button class="btn-secondary" id="btn-save-review">💾 후기 저장</button>
+          <button class="btn-secondary" id="btn-view-reviews">📝 후기 보기</button>
+        </div>
+      </div>
+
+      <!-- 저장된 후기 목록 -->
+      <div class="reviews-list" id="reviewsList" style="display: none;">
+        <h3 class="reviews-list-title">저장된 후기</h3>
+        <div id="reviewsContainer"></div>
       </div>
 
       <div class="result-actions">
