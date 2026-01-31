@@ -2,175 +2,167 @@
 
 ## 📊 추천 방식 개요
 
-CSV 데이터 기반 **필터링 + 폴백** 방식으로 사용자 선택에 맞는 노래를 추천합니다.
+**우선순위 기반 점수 매칭 시스템**으로 사용자 선택에 맞는 노래를 추천합니다.
 
 ## 🎯 핵심 로직
 
-### 1. 사용자 선택 데이터 구조
+### 가중치 시스템
 
 ```javascript
-{
-    나이: '20대' | '30대' | ... | null,
-    가수성별: '남' | '여' | null,
-    장르: '발라드' | '댄스' | '힙합' | '락' | '트로트' | 'R&B' | null,
-    분위기: '잔잔' | '달달' | '신나는' | '우울한' | '애절한' | null,
-    인원수: '혼자' | '듀엣' | '그룹' | null,
-    상황: '감성충전' | '분위기 띄우기' | '데이트' | '고음어필' | null
+weights = {
+    분위기: 40,    // 최우선 (노래방에서 가장 중요)
+    상황: 35,      // 두 번째 우선순위
+    장르: 10,      // 보조 조건
+    인원수: 8,     // 보조 조건
+    나이: 4,       // 참고 조건
+    가수성별: 3    // 참고 조건
 }
 ```
 
-- `null` = "상관없음" 선택 시 해당 조건 무시
+**총점 100점 만점**
 
-### 2. 3단계 폴백 전략
+## 🔍 추천 프로세스
+
+### 1. 점수 계산
+
+모든 노래에 대해 선택 조건과의 매칭도를 점수화:
+
+```javascript
+calculateScore(song, selection) {
+    let score = 0;
+    
+    // 분위기 매칭 (40점)
+    if (selection.분위기 && song.분위기 === selection.분위기) {
+        score += 40;
+    }
+    
+    // 상황 매칭 (35점)
+    if (selection.상황 && song.상황 === selection.상황) {
+        score += 35;
+    }
+    
+    // 장르 매칭 (10점)
+    if (selection.장르 && song.장르 === selection.장르) {
+        score += 10;
+    }
+    
+    // 인원수 매칭 (8점)
+    if (selection.인원수 && song.인원수 === selection.인원수) {
+        score += 8;
+    }
+    
+    // 나이 매칭 (4점) - 포함 여부
+    if (selection.나이 && song.나이.includes(selection.나이)) {
+        score += 4;
+    }
+    
+    // 가수성별 매칭 (3점) - 포함 여부
+    if (selection.가수성별 && song.성별.includes(selection.가수성별)) {
+        score += 3;
+    }
+    
+    return score;
+}
+```
+
+### 2. 최소 점수 필터링
+
+핵심 조건(분위기 또는 상황) 중 **하나라도 맞으면** 추천 대상:
+
+```javascript
+getMinimumScore(selection) {
+    // 분위기나 상황이 선택되었다면
+    if (selection.분위기 || selection.상황) {
+        return 35; // 둘 중 하나라도 맞아야 함
+    }
+    
+    // 핵심 조건이 없으면 다른 조건이라도 하나 맞으면 OK
+    return 3;
+}
+```
+
+### 3. 정렬 및 다양성 확보
 
 ```javascript
 recommend(userSelection, count = 5) {
-    // 1단계: 엄격한 필터링 (모든 조건 AND)
-    let filteredSongs = this.filterSongs(userSelection);
-
-    // 2단계: 조건 완화 (5곡 미만일 때)
-    if (filteredSongs.length < count) {
-        filteredSongs = this.filterSongsRelaxed(userSelection);
-    }
-
-    // 3단계: 전체 DB (그래도 부족할 때)
-    if (filteredSongs.length < count) {
-        filteredSongs = [...this.songs];
-    }
-
-    // 4. 랜덤 셔플 (Fisher-Yates)
-    this.shuffle(filteredSongs);
-
-    // 5. 요청 개수만큼 반환
-    return filteredSongs.slice(0, count);
+    // 1. 모든 곡 점수 계산
+    const scoredSongs = songs.map(song => ({
+        song,
+        score: calculateScore(song, userSelection)
+    }));
+    
+    // 2. 점수순 정렬 (높은 점수 우선)
+    scoredSongs.sort((a, b) => b.score - a.score);
+    
+    // 3. 최소 점수 이상만 필터링
+    const qualified = scoredSongs.filter(item => 
+        item.score >= getMinimumScore(userSelection)
+    );
+    
+    // 4. 상위 15곡(count * 3) 중에서 랜덤 섞기 (다양성)
+    const topSongs = qualified.slice(0, count * 3);
+    shuffle(topSongs);
+    
+    // 5. 5곡 반환
+    return topSongs.slice(0, count);
 }
 ```
-
-## 🔍 각 단계 상세
-
-### 1단계: 엄격한 필터링
-
-모든 선택 조건을 AND로 결합하여 매칭:
-
-```javascript
-filterSongs(selection) {
-    return this.songs.filter(song => {
-        // 나이: 선택값이 노래의 나이 필드에 포함되는지
-        if (selection.나이 && !song.나이.includes(selection.나이)) {
-            return false;
-        }
-        
-        // 가수성별: 선택값이 노래의 성별 필드에 포함되는지
-        if (selection.가수성별 && !song.성별.includes(selection.가수성별)) {
-            return false;
-        }
-        
-        // 장르: 정확히 일치
-        if (selection.장르 && song.장르 !== selection.장르) {
-            return false;
-        }
-        
-        // 분위기: 정확히 일치
-        if (selection.분위기 && song.분위기 !== selection.분위기) {
-            return false;
-        }
-        
-        // 인원수: 정확히 일치
-        if (selection.인원수 && song.인원수 !== selection.인원수) {
-            return false;
-        }
-        
-        // 상황: 정확히 일치
-        if (selection.상황 && song.상황 !== selection.상황) {
-            return false;
-        }
-        
-        return true;
-    });
-}
-```
-
-**예시:**
-- 선택: 20대 / 남자 / 댄스 / 신나는 / 그룹 / 분위기 띄우기
-- 매칭: `Dynamite,방탄소년단,10대 20대,남,댄스,신나는,그룹,분위기 띄우기` ✅
-
-### 2단계: 조건 완화 (핵심 조건만)
-
-나이, 성별, 장르, 인원수를 무시하고 **분위기 + 상황**만 매칭:
-
-```javascript
-filterSongsRelaxed(selection) {
-    return this.songs.filter(song => {
-        // 분위기만 체크
-        if (selection.분위기 && song.분위기 !== selection.분위기) {
-            return false;
-        }
-        // 상황만 체크
-        if (selection.상황 && song.상황 !== selection.상황) {
-            return false;
-        }
-        return true;
-    });
-}
-```
-
-**이유:** 분위기와 상황이 노래 선택에서 가장 중요한 요소
-
-### 3단계: 전체 DB
-
-모든 조건을 무시하고 전체 250+ 곡에서 랜덤 선택
 
 ## 📈 실제 동작 예시
 
-### 케이스 1: 충분한 데이터
+### 케이스 1: 모든 조건 선택
 
 **선택:** 20대 / 여자 / 댄스 / 신나는 / 그룹 / 분위기 띄우기
 
-1. **1단계**: 조건 맞는 곡 50곡 발견 ✅
-2. **셔플 후 5곡 반환**
+**점수 계산:**
+- 완벽 매칭 곡: 40 + 35 + 10 + 8 + 4 + 3 = **100점**
+- 분위기+상황만: 40 + 35 = **75점**
+- 분위기만: **40점**
 
-### 케이스 2: 데이터 부족
+**결과:** 75점 이상 곡들 우선 추천
 
-**선택:** 50대+ / 여자 / 트로트 / 우울한 / 혼자 / 고음어필
+### 케이스 2: 핵심 조건만 선택
 
-1. **1단계**: 조건 맞는 곡 2곡 발견 → 부족 ❌
-2. **2단계**: "우울한 + 고음어필" 조건으로 15곡 발견 ✅
-3. **셔플 후 5곡 반환**
+**선택:** 상관없음 / 상관없음 / 상관없음 / 신나는 / 상관없음 / 분위기 띄우기
 
-### 케이스 3: 극단적 부족
+**점수 계산:**
+- 분위기+상황 매칭: 40 + 35 = **75점**
+- 분위기만: **40점**
+- 상황만: **35점**
 
-**선택:** 매우 특이한 조합
+**결과:** 35점 이상 곡들 추천 (핵심 조건 하나라도 맞으면 OK)
 
-1. **1단계**: 0곡 ❌
-2. **2단계**: 1곡 ❌
-3. **3단계**: 전체 250+ 곡에서 랜덤 5곡 ✅
+### 케이스 3: 부분 매칭
 
-## 🎲 랜덤 셔플
+**선택:** 30대 / 남자 / 발라드 / 잔잔 / 혼자 / 감성충전
 
-Fisher-Yates 알고리즘 사용:
+**곡 A:** 30대, 남자, 발라드, 잔잔, 혼자, 감성충전 → **100점** ✅
+**곡 B:** 20대, 남자, 발라드, 잔잔, 혼자, 감성충전 → **96점** ✅
+**곡 C:** 30대, 여자, 댄스, 잔잔, 듀엣, 감성충전 → **79점** ✅
+**곡 D:** 40대, 남자, 힙합, 신나는, 그룹, 고음어필 → **7점** ❌
 
-```javascript
-shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-```
-
-**효과:** 같은 조건으로 여러 번 추천받아도 다른 곡이 나옴
+**결과:** A, B, C 순으로 추천 (상위 15곡 중 랜덤 5곡)
 
 ## 💡 장점
 
-1. **항상 5곡 보장**: 어떤 조건이든 결과 제공
-2. **유연한 매칭**: 데이터 부족 시 자동으로 조건 완화
-3. **다양성 확보**: 랜덤 셔플로 매번 다른 추천
-4. **빠른 성능**: 단순 필터링으로 즉시 결과 반환
+1. **유연한 매칭**: 모든 조건이 안 맞아도 핵심 조건만 맞으면 추천
+2. **우선순위 명확**: 분위기와 상황이 가장 중요 (노래방 특성 반영)
+3. **다양성 확보**: 상위 곡들 중 랜덤 선택으로 매번 다른 추천
+4. **부분 매칭 지원**: 일부 조건만 맞아도 점수 부여
+5. **항상 결과 보장**: 최소 점수 기준으로 항상 추천 가능
 
-## 🔧 확장 가능성
+## 🔧 가중치 조정 가능
 
-- 가중치 기반 스코어링 추가
-- 사용자 선호도 학습
-- 최근 추천 곡 제외 로직
-- 난이도 필터 추가
+필요에 따라 `weights` 값을 조정하여 추천 로직 변경 가능:
+
+```javascript
+// 예: 장르를 더 중요하게
+weights = {
+    분위기: 35,
+    상황: 30,
+    장르: 20,  // 증가
+    인원수: 8,
+    나이: 4,
+    가수성별: 3
+}
+```

@@ -1,6 +1,6 @@
 {
   "name": "karaoke-recommend",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "노래방 상황별 노래 추천 앱",
   "main": "app.js",
   "type": "module",

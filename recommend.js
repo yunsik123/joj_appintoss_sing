@@ -1,13 +1,23 @@
-// 추천 알고리즘 모듈 - CSV 데이터 기반 필터링
-// 사용자 선택 조건에 맞는 노래를 필터링하여 추천합니다
+// 추천 알고리즘 모듈 - 우선순위 기반 점수 매칭
+// 분위기와 상황을 우선시하고, 나머지 조건은 부가 점수로 활용
 
 export class SongRecommender {
     constructor(songs) {
         this.songs = songs;
+
+        // 조건별 가중치 (중요도 순)
+        this.weights = {
+            분위기: 40,    // 가장 중요
+            상황: 35,      // 두 번째로 중요
+            장르: 10,
+            인원수: 8,
+            나이: 4,
+            가수성별: 3
+        };
     }
 
     /**
-     * 사용자 선택에 맞는 노래를 추천합니다
+     * 사용자 선택에 맞는 노래를 추천합니다 (점수 기반)
      * @param {Object} userSelection - 사용자 선택 정보
      * @param {string|null} userSelection.나이 - 10대, 20대, 30대, 40대, 50대+ 또는 null(상관없음)
      * @param {string|null} userSelection.가수성별 - 남, 여 또는 null(상관없음)
@@ -19,79 +29,91 @@ export class SongRecommender {
      * @returns {Array} 추천된 노래 배열
      */
     recommend(userSelection, count = 5) {
-        // 1. 조건에 맞는 노래 필터링
-        let filteredSongs = this.filterSongs(userSelection);
+        // 1. 모든 곡에 점수 부여
+        const scoredSongs = this.songs.map(song => ({
+            song,
+            score: this.calculateScore(song, userSelection)
+        }));
 
-        // 2. 매칭되는 곡이 충분하지 않으면 조건 완화
-        if (filteredSongs.length < count) {
-            filteredSongs = this.filterSongsRelaxed(userSelection);
-        }
+        // 2. 점수순 정렬 (높은 점수 우선)
+        scoredSongs.sort((a, b) => b.score - a.score);
 
-        // 3. 그래도 부족하면 전체에서 랜덤
-        if (filteredSongs.length < count) {
-            filteredSongs = [...this.songs];
-        }
+        // 3. 최소 점수 필터링 (핵심 조건 중 하나라도 맞아야 함)
+        const minScore = this.getMinimumScore(userSelection);
+        const qualifiedSongs = scoredSongs.filter(item => item.score >= minScore);
 
-        // 4. 랜덤 셔플
-        this.shuffle(filteredSongs);
+        // 4. 상위 곡들 중에서 다양성을 위해 일부 랜덤 섞기
+        const topCount = Math.min(count * 3, qualifiedSongs.length);
+        const topSongs = qualifiedSongs.slice(0, topCount);
+        this.shuffle(topSongs);
 
         // 5. 요청된 수만큼 반환
-        return filteredSongs.slice(0, count);
+        return topSongs.slice(0, count).map(item => item.song);
     }
 
     /**
-     * 모든 조건을 AND로 필터링
+     * 노래의 점수를 계산합니다
      */
-    filterSongs(selection) {
-        return this.songs.filter(song => {
-            // 나이 조건: 선택한 나이가 노래의 나이 태그에 포함되어야 함
-            if (selection.나이 && !song.나이.includes(selection.나이)) {
-                return false;
-            }
+    calculateScore(song, selection) {
+        let score = 0;
 
-            // 가수 성별 조건
-            if (selection.가수성별 && !song.성별.includes(selection.가수성별)) {
-                return false;
+        // 분위기 매칭 (최우선)
+        if (selection.분위기) {
+            if (song.분위기 === selection.분위기) {
+                score += this.weights.분위기;
             }
+        }
 
-            // 장르 조건
-            if (selection.장르 && song.장르 !== selection.장르) {
-                return false;
+        // 상황 매칭 (두 번째 우선순위)
+        if (selection.상황) {
+            if (song.상황 === selection.상황) {
+                score += this.weights.상황;
             }
+        }
 
-            // 분위기 조건
-            if (selection.분위기 && song.분위기 !== selection.분위기) {
-                return false;
+        // 장르 매칭
+        if (selection.장르) {
+            if (song.장르 === selection.장르) {
+                score += this.weights.장르;
             }
+        }
 
-            // 인원수 조건
-            if (selection.인원수 && song.인원수 !== selection.인원수) {
-                return false;
+        // 인원수 매칭
+        if (selection.인원수) {
+            if (song.인원수 === selection.인원수) {
+                score += this.weights.인원수;
             }
+        }
 
-            // 상황 조건
-            if (selection.상황 && song.상황 !== selection.상황) {
-                return false;
+        // 나이 매칭 (포함 여부 체크)
+        if (selection.나이) {
+            if (song.나이.includes(selection.나이)) {
+                score += this.weights.나이;
             }
+        }
 
-            return true;
-        });
+        // 가수 성별 매칭 (포함 여부 체크)
+        if (selection.가수성별) {
+            if (song.성별.includes(selection.가수성별)) {
+                score += this.weights.가수성별;
+            }
+        }
+
+        return score;
     }
 
     /**
-     * 조건 완화 필터링 (분위기와 상황만 필수)
+     * 최소 점수 기준을 계산합니다
+     * 핵심 조건(분위기 또는 상황) 중 하나라도 맞으면 통과
      */
-    filterSongsRelaxed(selection) {
-        return this.songs.filter(song => {
-            // 핵심 조건만 체크
-            if (selection.분위기 && song.분위기 !== selection.분위기) {
-                return false;
-            }
-            if (selection.상황 && song.상황 !== selection.상황) {
-                return false;
-            }
-            return true;
-        });
+    getMinimumScore(selection) {
+        // 분위기나 상황이 선택되었다면, 둘 중 하나라도 맞아야 함
+        if (selection.분위기 || selection.상황) {
+            return Math.min(this.weights.분위기, this.weights.상황);
+        }
+
+        // 핵심 조건이 없으면 다른 조건이라도 하나 맞으면 OK
+        return 3;
     }
 
     /**
@@ -103,6 +125,33 @@ export class SongRecommender {
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
+    }
+
+    /**
+     * 모든 조건을 AND로 필터링 (기존 방식 - 호환성 유지)
+     */
+    filterSongs(selection) {
+        return this.songs.filter(song => {
+            if (selection.나이 && !song.나이.includes(selection.나이)) {
+                return false;
+            }
+            if (selection.가수성별 && !song.성별.includes(selection.가수성별)) {
+                return false;
+            }
+            if (selection.장르 && song.장르 !== selection.장르) {
+                return false;
+            }
+            if (selection.분위기 && song.분위기 !== selection.분위기) {
+                return false;
+            }
+            if (selection.인원수 && song.인원수 !== selection.인원수) {
+                return false;
+            }
+            if (selection.상황 && song.상황 !== selection.상황) {
+                return false;
+            }
+            return true;
+        });
     }
 
     /**
