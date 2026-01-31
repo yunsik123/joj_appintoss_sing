@@ -26,28 +26,37 @@ export class SongRecommender {
      * @param {string|null} userSelection.인원수 - 혼자, 듀엣, 그룹 또는 null
      * @param {string|null} userSelection.상황 - 감성충전, 분위기 띄우기, 데이트, 고음어필 또는 null
      * @param {number} count - 추천 곡 수 (기본 5곡)
+     * @param {Array} excludeList - 제외할 곡 제목 목록 (다시 추천받기 시 중복 방지)
      * @returns {Array} 추천된 노래 배열
      */
-    recommend(userSelection, count = 5) {
-        // 1. 모든 곡에 점수 부여
-        const scoredSongs = this.songs.map(song => ({
+    recommend(userSelection, count = 5, excludeList = []) {
+        // 1. 제외 목록을 제외한 곡들만 필터링
+        let availableSongs = this.songs;
+        if (excludeList.length > 0) {
+            availableSongs = this.songs.filter(song =>
+                !excludeList.includes(song.title)
+            );
+        }
+
+        // 2. 모든 곡에 점수 부여
+        const scoredSongs = availableSongs.map(song => ({
             song,
             score: this.calculateScore(song, userSelection)
         }));
 
-        // 2. 점수순 정렬 (높은 점수 우선)
+        // 3. 점수순 정렬 (높은 점수 우선)
         scoredSongs.sort((a, b) => b.score - a.score);
 
-        // 3. 최소 점수 필터링 (핵심 조건 중 하나라도 맞아야 함)
+        // 4. 최소 점수 필터링 (핵심 조건 중 하나라도 맞아야 함)
         const minScore = this.getMinimumScore(userSelection);
         const qualifiedSongs = scoredSongs.filter(item => item.score >= minScore);
 
-        // 4. 상위 곡들 중에서 다양성을 위해 일부 랜덤 섞기
-        const topCount = Math.min(count * 3, qualifiedSongs.length);
+        // 5. 상위 곡들 중에서 다양성을 위해 일부 랜덤 섞기 (30곡)
+        const topCount = Math.min(count * 6, qualifiedSongs.length);
         const topSongs = qualifiedSongs.slice(0, topCount);
         this.shuffle(topSongs);
 
-        // 5. 요청된 수만큼 반환
+        // 6. 요청된 수만큼 반환
         return topSongs.slice(0, count).map(item => item.song);
     }
 

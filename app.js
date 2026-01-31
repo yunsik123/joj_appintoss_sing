@@ -44,6 +44,9 @@ class KaraokeApp {
             상황: null
         };
 
+        // 이미 추천된 곡 목록 (중복 방지용)
+        this.recommendedSongs = [];
+
         this.init();
     }
 
@@ -379,10 +382,19 @@ class KaraokeApp {
         };
 
         console.log('[추천 조건]', selection);
+        console.log('[제외 목록]', this.recommendedSongs);
 
-        const recommendations = recommender.recommend(selection, 5);
+        // 이전에 추천된 곡 제외하고 추천
+        const recommendations = recommender.recommend(selection, 5, this.recommendedSongs);
 
         console.log('[추천 결과]', recommendations);
+
+        // 추천된 곡 목록에 추가
+        recommendations.forEach(song => {
+            if (!this.recommendedSongs.includes(song.title)) {
+                this.recommendedSongs.push(song.title);
+            }
+        });
 
         // 결과 표시
         resultList.innerHTML = recommendations.map((song, index) => `
@@ -415,6 +427,9 @@ class KaraokeApp {
             인원수: null,
             상황: null
         };
+
+        // 추천된 곡 목록 초기화
+        this.recommendedSongs = [];
 
         // 선택 표시 해제
         document.querySelectorAll('.option-btn, .genre-tag, .selection-card').forEach(el => {
