@@ -1,5 +1,5 @@
-// 추천 알고리즘 모듈
-// 사용자 선택 조건에 맞는 노래를 추천합니다
+// 추천 알고리즘 모듈 - CSV 데이터 기반 필터링
+// 사용자 선택 조건에 맞는 노래를 필터링하여 추천합니다
 
 export class SongRecommender {
     constructor(songs) {
@@ -9,90 +9,89 @@ export class SongRecommender {
     /**
      * 사용자 선택에 맞는 노래를 추천합니다
      * @param {Object} userSelection - 사용자 선택 정보
-     * @param {string} userSelection.situation - 상황 (opening, heating, closing, mood_change)
-     * @param {string} userSelection.groupSize - 인원 (solo, duo, group)
-     * @param {string} userSelection.atmosphere - 분위기 유형 (회식, 친구모임, 커플 등)
-     * @param {string} userSelection.timeSlot - 시간대 (evening, night, dawn)
+     * @param {string|null} userSelection.나이 - 10대, 20대, 30대, 40대, 50대+ 또는 null(상관없음)
+     * @param {string|null} userSelection.가수성별 - 남, 여 또는 null(상관없음)
+     * @param {string|null} userSelection.장르 - 발라드, 힙합, 댄스, 락, 트로트, R&B 또는 null
+     * @param {string|null} userSelection.분위기 - 잔잔, 달달, 신나는, 우울한, 애절한 또는 null
+     * @param {string|null} userSelection.인원수 - 혼자, 듀엣, 그룹 또는 null
+     * @param {string|null} userSelection.상황 - 감성충전, 분위기 띄우기, 데이트, 고음어필 또는 null
      * @param {number} count - 추천 곡 수 (기본 5곡)
      * @returns {Array} 추천된 노래 배열
      */
     recommend(userSelection, count = 5) {
-        // 1. 모든 곡에 대해 점수 계산
-        const scoredSongs = this.songs.map(song => ({
-            song,
-            score: this.calculateScore(song, userSelection)
-        }));
+        // 1. 조건에 맞는 노래 필터링
+        let filteredSongs = this.filterSongs(userSelection);
 
-        // 2. 점수순 정렬
-        scoredSongs.sort((a, b) => b.score - a.score);
+        // 2. 매칭되는 곡이 충분하지 않으면 조건 완화
+        if (filteredSongs.length < count) {
+            filteredSongs = this.filterSongsRelaxed(userSelection);
+        }
 
-        // 3. 최소 점수 이상인 곡만 필터링
-        const qualifiedSongs = scoredSongs.filter(item => item.score >= 20);
+        // 3. 그래도 부족하면 전체에서 랜덤
+        if (filteredSongs.length < count) {
+            filteredSongs = [...this.songs];
+        }
 
-        // 4. 상위 곡들 중에서 랜덤으로 섞어서 다양성 확보
-        const topSongs = qualifiedSongs.slice(0, Math.min(15, qualifiedSongs.length));
-        this.shuffle(topSongs);
+        // 4. 랜덤 셔플
+        this.shuffle(filteredSongs);
 
         // 5. 요청된 수만큼 반환
-        return topSongs.slice(0, count).map(item => item.song);
+        return filteredSongs.slice(0, count);
     }
 
     /**
-     * 노래의 적합도 점수를 계산합니다
-     * 가중치: 상황(40) > 분위기(25) > 인원(20) > 시간대(15)
+     * 모든 조건을 AND로 필터링
      */
-    calculateScore(song, userSelection) {
-        let score = 0;
-        const weights = {
-            situation: 40,
-            mood: 25,
-            groupSize: 20,
-            timeSlot: 15
-        };
+    filterSongs(selection) {
+        return this.songs.filter(song => {
+            // 나이 조건: 선택한 나이가 노래의 나이 태그에 포함되어야 함
+            if (selection.나이 && !song.나이.includes(selection.나이)) {
+                return false;
+            }
 
-        // 1. 상황 매칭 (가장 중요)
-        if (song.tags.situation.includes(userSelection.situation)) {
-            score += weights.situation;
-        }
+            // 가수 성별 조건
+            if (selection.가수성별 && !song.성별.includes(selection.가수성별)) {
+                return false;
+            }
 
-        // 2. 분위기 매칭 - atmosphere에 따른 선호 분위기 결정
-        const preferredMoods = this.getPreferredMoods(userSelection.atmosphere);
-        const moodMatchCount = song.tags.mood.filter(m => preferredMoods.includes(m)).length;
-        score += (moodMatchCount / preferredMoods.length) * weights.mood;
+            // 장르 조건
+            if (selection.장르 && song.장르 !== selection.장르) {
+                return false;
+            }
 
-        // 3. 인원 매칭
-        if (song.tags.groupSize.includes(userSelection.groupSize)) {
-            score += weights.groupSize;
-        }
+            // 분위기 조건
+            if (selection.분위기 && song.분위기 !== selection.분위기) {
+                return false;
+            }
 
-        // 4. 시간대 매칭
-        if (song.tags.timeSlot.includes(userSelection.timeSlot)) {
-            score += weights.timeSlot;
-        }
+            // 인원수 조건
+            if (selection.인원수 && song.인원수 !== selection.인원수) {
+                return false;
+            }
 
-        // 5. 보너스: 난이도가 쉬우면 추가 점수 (누구나 부를 수 있음)
-        if (song.tags.difficulty === 'easy') {
-            score += 5;
-        } else if (song.tags.difficulty === 'medium') {
-            score += 2;
-        }
+            // 상황 조건
+            if (selection.상황 && song.상황 !== selection.상황) {
+                return false;
+            }
 
-        return score;
+            return true;
+        });
     }
 
     /**
-     * 분위기 유형에 따른 선호 mood 태그를 반환합니다
+     * 조건 완화 필터링 (분위기와 상황만 필수)
      */
-    getPreferredMoods(atmosphere) {
-        const moodMap = {
-            '회식': ['energetic', 'fun'],           // 회식: 신나고 재미있는
-            '친구모임': ['fun', 'energetic'],       // 친구: 재미있고 신나는
-            '커플': ['calm', 'emotional'],          // 커플: 잔잔하고 감성적
-            '동창회': ['fun', 'emotional'],         // 동창회: 추억 + 재미
-            '가족모임': ['calm', 'fun'],            // 가족: 잔잔하고 재미있는
-            '축하자리': ['energetic', 'fun']        // 축하: 신나고 재미있는
-        };
-        return moodMap[atmosphere] || ['fun', 'calm'];
+    filterSongsRelaxed(selection) {
+        return this.songs.filter(song => {
+            // 핵심 조건만 체크
+            if (selection.분위기 && song.분위기 !== selection.분위기) {
+                return false;
+            }
+            if (selection.상황 && song.상황 !== selection.상황) {
+                return false;
+            }
+            return true;
+        });
     }
 
     /**
@@ -107,20 +106,23 @@ export class SongRecommender {
     }
 
     /**
-     * 특정 상황에 맞는 곡만 필터링합니다
+     * 특정 장르의 곡만 필터링
      */
-    filterBySituation(situation) {
-        return this.songs.filter(song =>
-            song.tags.situation.includes(situation)
-        );
+    filterByGenre(genre) {
+        return this.songs.filter(song => song.장르 === genre);
     }
 
     /**
-     * 듀엣곡(커플용)만 필터링합니다
+     * 특정 분위기의 곡만 필터링
      */
-    getDuetSongs() {
-        return this.songs.filter(song =>
-            song.tags.groupSize.includes('duo')
-        );
+    filterByMood(mood) {
+        return this.songs.filter(song => song.분위기 === mood);
+    }
+
+    /**
+     * 특정 상황에 맞는 곡만 필터링
+     */
+    filterBySituation(situation) {
+        return this.songs.filter(song => song.상황 === situation);
     }
 }

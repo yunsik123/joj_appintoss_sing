@@ -1,4 +1,4 @@
-// 이곡어때 - 메인 앱 로직
+// 이곡어때 - 메인 앱 로직 (CSV 기반)
 import { SONGS_DATABASE, TAGS, validateSongs } from './songs.js';
 import { SongRecommender } from './recommend.js';
 
@@ -8,8 +8,9 @@ const recommender = new SongRecommender(SONGS_DATABASE);
 if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
     const issues = validateSongs(SONGS_DATABASE);
     if (issues.length > 0) {
-        console.warn(`[songs] 태그 검증 이슈:\n${issues.join('\n')}`);
+        console.warn(`[songs] 태그 검증 이슈:\n${issues.slice(0, 10).join('\n')}`);
     }
+    console.log(`[songs] 총 ${SONGS_DATABASE.length}곡 로드됨`);
 }
 
 class KaraokeApp {
@@ -17,43 +18,25 @@ class KaraokeApp {
         // 화면 순서 정의
         this.screens = [
             'splash',      // 0
-            'profile',     // 1
-            'purpose',     // 2
-            'home',        // 3
-            'mood',        // 4
-            'people',      // 5
-            'occasion',    // 6
-            'result',      // 7
-            'feedback'     // 8
+            'age',         // 1 - 나이
+            'gender',      // 2 - 가수 성별
+            'genre',       // 3 - 장르
+            'mood',        // 4 - 분위기
+            'people',      // 5 - 인원수
+            'situation',   // 6 - 상황
+            'result'       // 7 - 결과
         ];
-        
+
         this.currentScreen = 0;
-        
-        // 사용자 데이터 수집
+
+        // 사용자 선택 데이터
         this.userData = {
-            // 프로필 정보
-            age: null,
-            gender: null,
-            frequency: null,
-            genres: [],
-            
-            // 사용 목적
-            purpose: null,
-            
-            // 추천 조건
-            situation: null,      // mood 화면에서 선택 (기존 상황과 매핑)
-            groupSize: null,      // people 화면에서 선택
-            atmosphere: null,     // occasion 화면에서 선택
-            genderRatio: null,    // people 화면에서 선택
-            
-            // 시간대 (자동 설정)
-            timeSlot: this.getTimeSlot(),
-            
-            // 피드백
-            rating: 0,
-            feedbackType: [],
-            feedbackText: '',
-            features: []
+            나이: null,
+            가수성별: null,
+            장르: null,
+            분위기: null,
+            인원수: null,
+            상황: null
         };
 
         this.init();
@@ -65,104 +48,53 @@ class KaraokeApp {
     }
 
     bindEvents() {
-        // 프로필 화면 - 단일 선택 버튼
-        document.querySelectorAll('#screen-profile .option-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleSingleSelect(e));
+        // 모든 선택 카드에 이벤트 바인딩
+        document.querySelectorAll('.selection-card').forEach(card => {
+            card.addEventListener('click', (e) => this.handleCardSelect(e));
         });
 
-        // 프로필 화면 - 장르 복수 선택
-        document.querySelectorAll('.genre-tag').forEach(tag => {
-            tag.addEventListener('click', (e) => this.handleGenreSelect(e));
-        });
-
-        // 프로필 다음 버튼
-        document.getElementById('btn-profile-next').addEventListener('click', () => {
-            if (this.validateProfile()) {
-                this.goToScreen(2); // 사용 목적
-            }
-        });
-
-        // 사용 목적 선택
-        document.querySelectorAll('.purpose-card').forEach(card => {
-            card.addEventListener('click', (e) => this.handlePurposeSelect(e));
-        });
-
-        // 사용 목적 뒤로가기
-        document.getElementById('btn-purpose-back').addEventListener('click', () => {
+        // 뒤로가기 버튼들
+        document.getElementById('btn-gender-back')?.addEventListener('click', () => {
             this.goToScreen(1);
         });
 
-        // 메인 홈 - 추천 시작
-        document.getElementById('btn-start-recommend').addEventListener('click', () => {
-            this.goToScreen(4); // 분위기 선택
+        document.getElementById('btn-genre-back')?.addEventListener('click', () => {
+            this.goToScreen(2);
         });
 
-        // 분위기 선택
-        document.querySelectorAll('.mood-card').forEach(card => {
-            card.addEventListener('click', (e) => this.handleMoodSelect(e));
-        });
-
-        document.getElementById('btn-mood-back').addEventListener('click', () => {
+        document.getElementById('btn-mood-back')?.addEventListener('click', () => {
             this.goToScreen(3);
         });
 
-        // 인원 & 성비 선택
-        document.querySelectorAll('#screen-people .people-card, #screen-people .gender-card').forEach(card => {
-            card.addEventListener('click', (e) => this.handleSingleSelect(e));
-        });
-
-        document.getElementById('btn-people-next').addEventListener('click', () => {
-            if (this.userData.groupSize && this.userData.genderRatio) {
-                this.goToScreen(6); // 자리 유형
-            }
-        });
-
-        document.getElementById('btn-people-back').addEventListener('click', () => {
+        document.getElementById('btn-people-back')?.addEventListener('click', () => {
             this.goToScreen(4);
         });
 
-        // 자리 유형 선택
-        document.querySelectorAll('.occasion-card').forEach(card => {
-            card.addEventListener('click', (e) => this.handleOccasionSelect(e));
-        });
-
-        document.getElementById('btn-occasion-back').addEventListener('click', () => {
+        document.getElementById('btn-situation-back')?.addEventListener('click', () => {
             this.goToScreen(5);
         });
 
-        // 결과 화면
-        document.getElementById('btn-retry').addEventListener('click', () => {
+        // 결과 화면 버튼들
+        document.getElementById('btn-retry')?.addEventListener('click', () => {
             this.showResults();
         });
 
-        document.getElementById('btn-feedback').addEventListener('click', () => {
-            this.goToScreen(8); // 피드백
-        });
-
-        // 피드백 화면
-        document.querySelectorAll('.star-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleRating(e));
-        });
-
-        document.querySelectorAll('#screen-feedback .feedback-tag').forEach(tag => {
-            tag.addEventListener('click', (e) => this.handleFeedbackTag(e));
-        });
-
-        document.getElementById('btn-submit-feedback').addEventListener('click', () => {
-            this.submitFeedback();
-        });
-
-        document.getElementById('btn-skip-feedback').addEventListener('click', () => {
-            this.goToScreen(3); // 홈으로
+        document.getElementById('btn-restart')?.addEventListener('click', () => {
+            this.resetAndRestart();
         });
     }
 
-    // 스플래시 화면 표시 (3초 후 자동 이동)
+    // 스플래시 화면 표시 (클릭하면 이동)
     showSplash() {
         this.goToScreen(0);
-        setTimeout(() => {
-            this.goToScreen(1); // 프로필 입력으로
-        }, 3000);
+
+        // 스플래시 화면 클릭 시 다음으로
+        const splashScreen = document.getElementById('screen-splash');
+        const splashClickHandler = () => {
+            this.goToScreen(1); // 나이 선택으로
+            splashScreen.removeEventListener('click', splashClickHandler);
+        };
+        splashScreen.addEventListener('click', splashClickHandler);
     }
 
     // 화면 전환
@@ -174,151 +106,53 @@ class KaraokeApp {
 
         // 새 화면 표시
         const screenName = this.screens[screenIndex];
-        document.getElementById(`screen-${screenName}`).classList.add('active');
-        
+        const screenElement = document.getElementById(`screen-${screenName}`);
+        if (screenElement) {
+            screenElement.classList.add('active');
+        }
+
         this.currentScreen = screenIndex;
-
-        // 진행률 업데이트
-        this.updateProgress(screenIndex);
     }
 
-    // 진행률 표시 업데이트
-    updateProgress(screenIndex) {
-        const progressScreens = [1, 2, 4, 5, 6]; // 프로필, 목적, 분위기, 인원, 자리유형
-        
-        if (!progressScreens.includes(screenIndex)) return;
-
-        const screen = document.getElementById(`screen-${this.screens[screenIndex]}`);
-        const dots = screen.querySelectorAll('.progress-dots .dot');
-        
-        if (!dots.length) return;
-
-        // 각 화면별 진행률 설정
-        const progressMap = {
-            1: 1,  // 프로필 (1/3)
-            2: 2,  // 목적 (2/3)
-            4: 1,  // 분위기 (1/3)
-            5: 2,  // 인원 (2/3)
-            6: 3   // 자리유형 (3/3)
-        };
-
-        const activeCount = progressMap[screenIndex] || 0;
-        
-        dots.forEach((dot, index) => {
-            if (index < activeCount) {
-                dot.classList.add('active');
-            } else {
-                dot.classList.remove('active');
-            }
-        });
-    }
-
-    // 단일 선택 처리
-    handleSingleSelect(e) {
-        const btn = e.currentTarget;
-        const field = btn.dataset.field;
-        const value = btn.dataset.value;
-
-        // 같은 필드의 다른 버튼 선택 해제
-        const parent = btn.closest('.input-section') || btn.closest('.screen');
-        parent.querySelectorAll(`[data-field="${field}"]`).forEach(b => {
-            b.classList.remove('selected');
-        });
-
-        // 현재 버튼 선택
-        btn.classList.add('selected');
-        this.userData[field] = value;
-    }
-
-    // 장르 복수 선택 처리
-    handleGenreSelect(e) {
-        const tag = e.currentTarget;
-        const value = tag.dataset.value;
-
-        tag.classList.toggle('selected');
-
-        if (tag.classList.contains('selected')) {
-            if (!this.userData.genres.includes(value)) {
-                this.userData.genres.push(value);
-            }
-        } else {
-            this.userData.genres = this.userData.genres.filter(g => g !== value);
-        }
-    }
-
-    // 프로필 검증
-    validateProfile() {
-        const { age, gender, frequency, genres } = this.userData;
-        
-        if (!age || !gender || !frequency) {
-            alert('모든 필수 항목을 선택해주세요.');
-            return false;
-        }
-
-        if (genres.length === 0) {
-            alert('선호 장르를 최소 1개 이상 선택해주세요.');
-            return false;
-        }
-
-        return true;
-    }
-
-    // 사용 목적 선택
-    handlePurposeSelect(e) {
+    // 카드 선택 처리
+    handleCardSelect(e) {
         const card = e.currentTarget;
+        const field = card.dataset.field;
         const value = card.dataset.value;
 
-        // 다른 카드 선택 해제
-        document.querySelectorAll('.purpose-card').forEach(c => {
+        // 같은 화면의 다른 카드 선택 해제
+        const screen = card.closest('.screen');
+        screen.querySelectorAll('.selection-card').forEach(c => {
             c.classList.remove('selected');
         });
 
+        // 현재 카드 선택
         card.classList.add('selected');
-        this.userData.purpose = value;
 
-        // 잠시 후 다음 화면으로
+        // 값 저장 (null 문자열이면 실제 null로)
+        this.userData[field] = value === 'null' ? null : value;
+
+        // 다음 화면으로 이동
         setTimeout(() => {
-            this.goToScreen(3); // 메인 홈
+            this.moveToNextScreen();
         }, 300);
     }
 
-    // 분위기 선택 (situation 매핑)
-    handleMoodSelect(e) {
-        const card = e.currentTarget;
-        const value = card.dataset.value;
+    // 다음 화면으로 이동
+    moveToNextScreen() {
+        const nextScreen = this.currentScreen + 1;
 
-        document.querySelectorAll('.mood-card').forEach(c => {
-            c.classList.remove('selected');
-        });
-
-        card.classList.add('selected');
-        this.userData.situation = value;
-
-        setTimeout(() => {
-            this.goToScreen(5); // 인원 & 성비
-        }, 300);
-    }
-
-    // 자리 유형 선택
-    handleOccasionSelect(e) {
-        const card = e.currentTarget;
-        const value = card.dataset.value;
-
-        document.querySelectorAll('.occasion-card').forEach(c => {
-            c.classList.remove('selected');
-        });
-
-        card.classList.add('selected');
-        this.userData.atmosphere = value;
-
-        setTimeout(() => {
+        // 마지막 선택(상황) 후 결과 표시
+        if (nextScreen >= this.screens.length - 1) {
             this.showResults();
-        }, 300);
+        } else {
+            this.goToScreen(nextScreen);
+        }
     }
 
     // 결과 표시
     showResults() {
-        this.goToScreen(7);
+        this.goToScreen(7); // result
 
         // 선택 조건 태그 표시
         this.displayTags();
@@ -330,24 +164,25 @@ class KaraokeApp {
     // 선택 조건 태그 표시
     displayTags() {
         const tagsContainer = document.getElementById('resultTags');
-        
-        const situationLabel = {
-            'heating': '신나게 띄우기',
-            'opening': '잔잔하게',
-            'closing': '감성 충전',
-            'mood_change': '흥겨운 떼창'
-        }[this.userData.situation] || this.userData.situation;
 
-        const tags = [
-            situationLabel,
-            TAGS.groupSize[this.userData.groupSize],
-            this.userData.genderRatio,
-            this.userData.atmosphere
-        ];
+        const tagLabels = {
+            나이: this.userData.나이 || '모든 연령',
+            가수성별: this.userData.가수성별 ? (this.userData.가수성별 === '남' ? '남자가수' : '여자가수') : '모든 가수',
+            장르: this.userData.장르 || '모든 장르',
+            분위기: this.userData.분위기 || '모든 분위기',
+            인원수: this.userData.인원수 || '모든 인원',
+            상황: this.userData.상황 || '모든 상황'
+        };
 
-        tagsContainer.innerHTML = tags.map(tag => 
-            `<span class="result-tag">${tag}</span>`
-        ).join('');
+        const tags = Object.values(tagLabels).filter(v => !v.startsWith('모든'));
+
+        if (tags.length === 0) {
+            tagsContainer.innerHTML = '<span class="result-tag">모든 조건</span>';
+        } else {
+            tagsContainer.innerHTML = tags.map(tag =>
+                `<span class="result-tag">${tag}</span>`
+            ).join('');
+        }
     }
 
     // 추천 노래 표시
@@ -355,14 +190,7 @@ class KaraokeApp {
         const resultList = document.getElementById('resultList');
 
         // 추천 받기
-        const selection = {
-            situation: this.userData.situation,
-            groupSize: this.userData.groupSize,
-            atmosphere: this.userData.atmosphere,
-            timeSlot: this.userData.timeSlot
-        };
-
-        const recommendations = recommender.recommend(selection, 5);
+        const recommendations = recommender.recommend(this.userData, 5);
 
         // 결과 표시
         resultList.innerHTML = recommendations.map((song, index) => `
@@ -372,83 +200,33 @@ class KaraokeApp {
                     <div class="result-song-title">${song.title}</div>
                     <div class="result-artist">${song.artist}</div>
                 </div>
+                <div class="result-tags-small">
+                    <span class="tag-small">${song.장르}</span>
+                    <span class="tag-small">${song.분위기}</span>
+                </div>
             </div>
         `).join('');
     }
 
-    // 평점 선택
-    handleRating(e) {
-        const btn = e.currentTarget;
-        const rating = parseInt(btn.dataset.rating);
+    // 처음부터 다시 시작
+    resetAndRestart() {
+        // 선택 초기화
+        this.userData = {
+            나이: null,
+            가수성별: null,
+            장르: null,
+            분위기: null,
+            인원수: null,
+            상황: null
+        };
 
-        // 선택한 별까지 모두 선택
-        document.querySelectorAll('.star-btn').forEach((star, index) => {
-            if (index < rating) {
-                star.classList.add('selected');
-            } else {
-                star.classList.remove('selected');
-            }
+        // 선택 표시 해제
+        document.querySelectorAll('.selection-card').forEach(card => {
+            card.classList.remove('selected');
         });
 
-        this.userData.rating = rating;
-    }
-
-    // 피드백 태그 선택
-    handleFeedbackTag(e) {
-        const tag = e.currentTarget;
-        const value = tag.dataset.value;
-        const field = tag.closest('.input-section').querySelector('.input-label').textContent;
-
-        tag.classList.toggle('selected');
-
-        // 추천 결과 평가
-        if (field.includes('추천 결과')) {
-            if (tag.classList.contains('selected')) {
-                if (!this.userData.feedbackType.includes(value)) {
-                    this.userData.feedbackType.push(value);
-                }
-            } else {
-                this.userData.feedbackType = this.userData.feedbackType.filter(t => t !== value);
-            }
-        }
-
-        // 기능 요청
-        if (field.includes('기능')) {
-            if (tag.classList.contains('selected')) {
-                if (!this.userData.features.includes(value)) {
-                    this.userData.features.push(value);
-                }
-            } else {
-                this.userData.features = this.userData.features.filter(f => f !== value);
-            }
-        }
-    }
-
-    // 피드백 제출
-    submitFeedback() {
-        this.userData.feedbackText = document.getElementById('feedbackText').value;
-
-        // 콘솔에 수집된 데이터 출력 (실제로는 서버로 전송)
-        console.log('=== 수집된 사용자 데이터 ===');
-        console.log(this.userData);
-
-        alert('소중한 의견 감사합니다! 🙏');
-        
-        // 홈으로 이동
-        this.goToScreen(3);
-    }
-
-    // 현재 시간대 계산
-    getTimeSlot() {
-        const hour = new Date().getHours();
-        
-        if (hour >= 18 && hour < 21) {
-            return 'evening'; // 저녁
-        } else if (hour >= 21 || hour < 6) {
-            return 'night';   // 밤
-        } else {
-            return 'dawn';    // 새벽 (실제로는 낮 시간도 포함)
-        }
+        // 첫 화면으로
+        this.goToScreen(1);
     }
 }
 

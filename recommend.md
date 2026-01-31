@@ -1,239 +1,176 @@
-# 노래 추천 알고리즘 설계
+# 노래 추천 알고리즘 설계 문서
 
-## 1. 개요
+## 📊 추천 방식 개요
 
-노래방 상황에 맞는 노래를 추천하기 위한 **태그 기반 가중치 스코어링 알고리즘**입니다.
+CSV 데이터 기반 **필터링 + 폴백** 방식으로 사용자 선택에 맞는 노래를 추천합니다.
 
-## 2. 태그 시스템
+## 🎯 핵심 로직
 
-### 2.1 태그 구조
-
-각 노래는 다음 태그를 가집니다:
+### 1. 사용자 선택 데이터 구조
 
 ```javascript
 {
-  title: "곡 제목",
-  artist: "가수",
-  tags: {
-    mood: ["energetic", "fun"],      // 분위기 (복수 가능)
-    difficulty: "easy",              // 난이도 (단일)
-    groupSize: ["duo", "group"],     // 인원 적합도 (복수 가능)
-    timeSlot: ["evening", "night"],  // 시간대 (복수 가능)
-    situation: ["opening", "heating"] // 상황 (복수 가능)
-  }
+    나이: '20대' | '30대' | ... | null,
+    가수성별: '남' | '여' | null,
+    장르: '발라드' | '댄스' | '힙합' | '락' | '트로트' | 'R&B' | null,
+    분위기: '잔잔' | '달달' | '신나는' | '우울한' | '애절한' | null,
+    인원수: '혼자' | '듀엣' | '그룹' | null,
+    상황: '감성충전' | '분위기 띄우기' | '데이트' | '고음어필' | null
 }
 ```
 
-### 2.2 태그 종류
+- `null` = "상관없음" 선택 시 해당 조건 무시
 
-| 카테고리 | 태그 | 설명 |
-|---------|------|------|
-| **mood** | energetic | 신나는 |
-| | calm | 잔잔한 |
-| | fun | 재미있는 |
-| | emotional | 감성적인 |
-| **difficulty** | easy | 쉬움 (누구나 가능) |
-| | medium | 보통 |
-| | hard | 어려움 (실력 필요) |
-| **groupSize** | solo | 혼자 부르기 좋음 |
-| | duo | 둘이서 (듀엣) |
-| | group | 여럿이서 (떼창) |
-| **timeSlot** | evening | 저녁 (6-9시) |
-| | night | 밤 (9-12시) |
-| | dawn | 새벽 (12시 이후) |
-| **situation** | opening | 첫 곡 / 잔잔하게 |
-| | heating | 신나게 띄우기 |
-| | mood_change | 흥겨운 떼창 / 분위기 전환 |
-| | closing | 감성 충전 / 마무리 |
-
-### 2.3 데이터 커버리지
-- 노래 DB는 댄스/발라드뿐 아니라 **R&B, 힙합/랩** 곡도 포함합니다.
-- 장르는 별도 태그로 분리하지 않고 분위기/상황 태그로 추천에 반영합니다.
-- 현재 **70곡 이상**의 노래 데이터베이스 보유
-
-## 3. 앱 UI 플로우와 매핑
-
-### 3.1 분위기 화면 → situation 매핑
-
-| UI 선택 | situation 값 | 설명 |
-|---------|-------------|------|
-| 🔥 신나게 띄우기 | `heating` | 텐션 UP 곡 |
-| 🎵 잔잔하게 | `opening` | 편안한 분위기 |
-| 💜 감성 충전 | `closing` | 발라드 분위기 전환 |
-| 🎉 흥겨운 떼창 | `mood_change` | 다 같이 따라부르는 곡 |
-
-### 3.2 자리 유형 → atmosphere 매핑
-
-| UI 선택 | atmosphere 값 | 선호 mood |
-|---------|--------------|----------|
-| 💼 직장 모임 | `회식` | energetic, fun |
-| 👯 친구 모임 | `친구모임` | fun, energetic |
-| 💕 연인·가족 | `커플` | calm, emotional |
-| 🎂 특별한 날 | `축하자리` | energetic, fun |
-
-### 3.3 인원 선택 → groupSize 매핑
-
-| UI 선택 | groupSize 값 |
-|---------|-------------|
-| 🧑 혼자 | `solo` |
-| 👫 2명 | `duo` |
-| 👨‍👩‍👧‍👦 3명+ | `group` |
-
-## 4. 스코어링 알고리즘
-
-### 4.1 가중치 설정
-
-```
-상황(situation)  : 40점 - 가장 중요
-분위기(mood)     : 25점 - 모임 성격에 맞는 곡
-인원(groupSize)  : 20점 - 부르기 적합한 인원
-시간대(timeSlot) : 15점 - 시간대 분위기
-────────────────────────
-최대 점수        : 100점 + 보너스
-```
-
-### 4.2 점수 계산 로직
+### 2. 3단계 폴백 전략
 
 ```javascript
-function calculateScore(song, userSelection) {
-  let score = 0;
+recommend(userSelection, count = 5) {
+    // 1단계: 엄격한 필터링 (모든 조건 AND)
+    let filteredSongs = this.filterSongs(userSelection);
 
-  // 1. 상황 매칭 (40점)
-  if (song.tags.situation.includes(userSelection.situation)) {
-    score += 40;
-  }
-
-  // 2. 분위기 매칭 (25점)
-  const preferredMoods = getPreferredMoods(userSelection.atmosphere);
-  const matchRatio = countMatches(song.tags.mood, preferredMoods) / preferredMoods.length;
-  score += matchRatio * 25;
-
-  // 3. 인원 매칭 (20점)
-  if (song.tags.groupSize.includes(userSelection.groupSize)) {
-    score += 20;
-  }
-
-  // 4. 시간대 매칭 (15점)
-  if (song.tags.timeSlot.includes(userSelection.timeSlot)) {
-    score += 15;
-  }
-
-  // 5. 보너스: 난이도
-  if (song.tags.difficulty === 'easy') score += 5;
-  else if (song.tags.difficulty === 'medium') score += 2;
-
-  return score;
-}
-```
-
-### 4.3 분위기별 선호 mood
-
-| 모임 성격 | 선호 mood | 이유 |
-|----------|----------|------|
-| 회식 | energetic, fun | 분위기 띄우기 |
-| 친구모임 | fun, energetic | 신나게 놀기 |
-| 커플 | calm, emotional | 로맨틱한 분위기 |
-| 축하자리 | energetic, fun | 축제 분위기 |
-
-## 5. 추천 프로세스
-
-```
-┌─────────────────┐
-│ 1. 사용자 선택  │  situation, groupSize, atmosphere, genderRatio
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ 2. 점수 계산    │  모든 곡에 대해 스코어 계산
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ 3. 필터링       │  최소 점수(20점) 이상만 선택
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ 4. 상위 추출    │  상위 15곡 추출
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ 5. 랜덤 셔플    │  Fisher-Yates 알고리즘
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ 6. 결과 반환    │  상위 5곡 추천
-└─────────────────┘
-```
-
-## 6. 다양성 확보 전략
-
-### 6.1 랜덤 셔플
-- 단순히 점수 순으로 추천하면 매번 같은 곡이 나옴
-- 상위 15곡 중에서 랜덤 셔플 후 5곡 선택
-- "🔄 다시 추천받기" 버튼으로 다른 조합 제공
-
-### 6.2 Fisher-Yates 알고리즘
-```javascript
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-```
-
-## 7. 시간대 자동 계산
-
-앱에서 현재 시간을 기준으로 자동 설정:
-
-```javascript
-getTimeSlot() {
-    const hour = new Date().getHours();
-    
-    if (hour >= 18 && hour < 21) {
-        return 'evening'; // 저녁
-    } else if (hour >= 21 || hour < 6) {
-        return 'night';   // 밤
-    } else {
-        return 'dawn';    // 새벽/낮
+    // 2단계: 조건 완화 (5곡 미만일 때)
+    if (filteredSongs.length < count) {
+        filteredSongs = this.filterSongsRelaxed(userSelection);
     }
+
+    // 3단계: 전체 DB (그래도 부족할 때)
+    if (filteredSongs.length < count) {
+        filteredSongs = [...this.songs];
+    }
+
+    // 4. 랜덤 셔플 (Fisher-Yates)
+    this.shuffle(filteredSongs);
+
+    // 5. 요청 개수만큼 반환
+    return filteredSongs.slice(0, count);
 }
 ```
 
-## 8. 예시 시나리오
+## 🔍 각 단계 상세
 
-### 시나리오: 친구모임, 신나게 띄우기, 3명+, 밤
+### 1단계: 엄격한 필터링
 
-**사용자 선택:**
-- situation: `heating`
-- groupSize: `group`
-- atmosphere: `친구모임`
-- timeSlot: `night` (자동)
-
-**높은 점수 예시:**
-| 곡 | 상황 | 분위기 | 인원 | 시간 | 난이도 | 총점 |
-|---|------|-------|-----|------|--------|-----|
-| 뿜뿜 (모모랜드) | 40 | 25 | 20 | 15 | +5 | 105 |
-| 강남스타일 (싸이) | 40 | 25 | 20 | 15 | +5 | 105 |
-| Dynamite (BTS) | 40 | 25 | 20 | 15 | +2 | 102 |
-
-## 9. 확장 방향
-
-1. **사용자 피드백 반영**: 좋아요/싫어요 → 개인화
-2. **연도/세대 필터**: 90년대, 2000년대, 최신곡 등
-3. **장르 필터**: 발라드, 댄스, R&B, 힙합 등 (UI/알고리즘 확장 필요)
-4. **난이도 조절**: "쉬운 곡만" 옵션
-5. **노래방 번호 연동**: TJ, 금영 번호 표시
-6. **성비 반영**: 남초/여초에 따른 가수 성별 가중치 (미구현)
-
-## 10. 데이터 검증
-
-개발 모드에서 태그 값이 정의된 범위를 벗어나면 경고를 출력합니다:
+모든 선택 조건을 AND로 결합하여 매칭:
 
 ```javascript
-if (import.meta.env.DEV) {
-    const issues = validateSongs(SONGS_DATABASE);
-    if (issues.length > 0) {
-        console.warn(`[songs] 태그 검증 이슈:\n${issues.join('\n')}`);
-    }
+filterSongs(selection) {
+    return this.songs.filter(song => {
+        // 나이: 선택값이 노래의 나이 필드에 포함되는지
+        if (selection.나이 && !song.나이.includes(selection.나이)) {
+            return false;
+        }
+        
+        // 가수성별: 선택값이 노래의 성별 필드에 포함되는지
+        if (selection.가수성별 && !song.성별.includes(selection.가수성별)) {
+            return false;
+        }
+        
+        // 장르: 정확히 일치
+        if (selection.장르 && song.장르 !== selection.장르) {
+            return false;
+        }
+        
+        // 분위기: 정확히 일치
+        if (selection.분위기 && song.분위기 !== selection.분위기) {
+            return false;
+        }
+        
+        // 인원수: 정확히 일치
+        if (selection.인원수 && song.인원수 !== selection.인원수) {
+            return false;
+        }
+        
+        // 상황: 정확히 일치
+        if (selection.상황 && song.상황 !== selection.상황) {
+            return false;
+        }
+        
+        return true;
+    });
 }
 ```
+
+**예시:**
+- 선택: 20대 / 남자 / 댄스 / 신나는 / 그룹 / 분위기 띄우기
+- 매칭: `Dynamite,방탄소년단,10대 20대,남,댄스,신나는,그룹,분위기 띄우기` ✅
+
+### 2단계: 조건 완화 (핵심 조건만)
+
+나이, 성별, 장르, 인원수를 무시하고 **분위기 + 상황**만 매칭:
+
+```javascript
+filterSongsRelaxed(selection) {
+    return this.songs.filter(song => {
+        // 분위기만 체크
+        if (selection.분위기 && song.분위기 !== selection.분위기) {
+            return false;
+        }
+        // 상황만 체크
+        if (selection.상황 && song.상황 !== selection.상황) {
+            return false;
+        }
+        return true;
+    });
+}
+```
+
+**이유:** 분위기와 상황이 노래 선택에서 가장 중요한 요소
+
+### 3단계: 전체 DB
+
+모든 조건을 무시하고 전체 250+ 곡에서 랜덤 선택
+
+## 📈 실제 동작 예시
+
+### 케이스 1: 충분한 데이터
+
+**선택:** 20대 / 여자 / 댄스 / 신나는 / 그룹 / 분위기 띄우기
+
+1. **1단계**: 조건 맞는 곡 50곡 발견 ✅
+2. **셔플 후 5곡 반환**
+
+### 케이스 2: 데이터 부족
+
+**선택:** 50대+ / 여자 / 트로트 / 우울한 / 혼자 / 고음어필
+
+1. **1단계**: 조건 맞는 곡 2곡 발견 → 부족 ❌
+2. **2단계**: "우울한 + 고음어필" 조건으로 15곡 발견 ✅
+3. **셔플 후 5곡 반환**
+
+### 케이스 3: 극단적 부족
+
+**선택:** 매우 특이한 조합
+
+1. **1단계**: 0곡 ❌
+2. **2단계**: 1곡 ❌
+3. **3단계**: 전체 250+ 곡에서 랜덤 5곡 ✅
+
+## 🎲 랜덤 셔플
+
+Fisher-Yates 알고리즘 사용:
+
+```javascript
+shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+```
+
+**효과:** 같은 조건으로 여러 번 추천받아도 다른 곡이 나옴
+
+## 💡 장점
+
+1. **항상 5곡 보장**: 어떤 조건이든 결과 제공
+2. **유연한 매칭**: 데이터 부족 시 자동으로 조건 완화
+3. **다양성 확보**: 랜덤 셔플로 매번 다른 추천
+4. **빠른 성능**: 단순 필터링으로 즉시 결과 반환
+
+## 🔧 확장 가능성
+
+- 가중치 기반 스코어링 추가
+- 사용자 선호도 학습
+- 최근 추천 곡 제외 로직
+- 난이도 필터 추가

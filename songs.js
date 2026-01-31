@@ -1,916 +1,311 @@
+// 노래 데이터베이스 - CSV 기반
+// song_matching_classified.csv 데이터를 파싱하여 사용
+
+// CSV 데이터 문자열 (song_matching_classified.csv 내용)
+const CSV_DATA = `song_title,artist,나이,성별,장르,분위기,인원수,상황
+"#2025 : YOU (Feat. YOUHA(유하), cyd)",Minit,20대 30대,남,발라드,애절한,듀엣,감성충전
+('Cause) I'm Your Girl,S.E.S.,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+(이런 XX) 뭐야 이건,지니 (Geenie),20대 30대,남,발라드,애절한,혼자,감성충전
+...말하자면,김성재,20대 30대,남,발라드,애절한,혼자,감성충전
+...사랑했잖아...,린 (LYn),20대 30대,여,발라드,달달,혼자,데이트
+...사랑했잖아...(2024),고경표,20대 30대,남,발라드,달달,혼자,데이트
+...안 되나요... (부제: 화양연화),휘성 (Realslow),20대 30대,남,발라드,애절한,혼자,감성충전
+0+0,한로로,20대 30대,남,발라드,애절한,혼자,감성충전
+801,Stray Kids (스트레이 키즈),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+10분 내로,김연자,40대 50대+,여,트로트,신나는,혼자,분위기 띄우기
+10월 4일,아이유 (IU),20대 30대,여,발라드,애절한,혼자,감성충전
+10점 만점에 10점,2PM,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+112파티,김연자,40대 50대+,여,트로트,신나는,혼자,분위기 띄우기
+11:11,태연 (TAEYEON),20대 30대,여,발라드,애절한,혼자,감성충전
+123-78,BOYNEXTDOOR,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+12:34,The Band CAMINO,20대 30대,남,락,신나는,그룹,분위기 띄우기
+12시 30분,비스트 (Beast),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+12월의 기적 (Miracles In December),EXO,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+12월(月),엠씨더맥스 (M.C the MAX),20대 30대,남,발라드,애절한,그룹,고음어필
+180도,벤,20대 30대,여,발라드,애절한,혼자,감성충전
+2015 어리석은 이별,정재욱,20대 30대,남,발라드,우울한,혼자,감성충전
+20대가 싫어,High Spirit,20대 30대,남,발라드,애절한,혼자,감성충전
+21세기의 어떤 날,LUCY,20대 30대,남,락,신나는,그룹,분위기 띄우기
+25,나상현씨밴드,20대 30대,남,락,신나는,그룹,분위기 띄우기
+25,볼빨간사춘기,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+26,윤하,20대 30대,여,발라드,애절한,혼자,감성충전
+27살의 고백,윤딴딴,20대 30대,남,발라드,달달,혼자,데이트
+29살의 봄,소소한 프로젝트,20대 30대,남,발라드,달달,혼자,데이트
+3!4!,룰라 (Roo' Ra),20대 30대,남/여,발라드,애절한,그룹,감성충전
+365일,알리 (ALi),20대 30대,여,발라드,애절한,혼자,감성충전
+7년간의 사랑,규현 (KYUHYUN),20대 30대,남,발라드,달달,혼자,데이트
+8282,다비치,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+A Love of Van Gogh,뎁트,20대 30대,남,발라드,달달,혼자,데이트
+A-TEEN,세븐틴 (SEVENTEEN),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+ABCD,나연 (TWICE),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+ALL IN MOTION (feat. Yung Fazo),Colde (콜드),20대 30대,남,R&B,달달,듀엣,데이트
+ANTIFRAGILE,LE SSERAFIM (르세라핌),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+APT.,로제 (ROSÉ)&Bruno Mars,20대 30대,남,발라드,애절한,듀엣,감성충전
+ASAP,STAYC (스테이씨),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+ATTITUDE,IVE (아이브),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Abracadabra,브라운아이드걸스,20대 30대,남,발라드,애절한,혼자,감성충전
+After LIKE,IVE (아이브),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Ah-Choo,러블리즈,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+All For You,서인국,20대 30대,남,발라드,애절한,혼자,감성충전
+All For You,정은지&서인국,20대 30대,여,발라드,애절한,듀엣,감성충전
+All For You,쿨,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+"All I Wanna Do (K) (Feat. Hoody, Loco)",박재범,10대 20대,남,힙합,신나는,듀엣,분위기 띄우기
+Always,터보,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+"And July (feat. DEAN, DJ Friz)",헤이즈 (Heize),20대 30대,여,R&B,달달,듀엣,데이트
+Armageddon,aespa,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Attention,NewJeans,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+BAE BAE,BIGBANG (빅뱅),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+BLUE MOON (PROD. GROOVYROOM),효린&창모 (CHANGMO),10대 20대,남,힙합,신나는,듀엣,분위기 띄우기
+BOSS,NCT U,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+BUNGEE (Fall in Love),오마이걸 (OH MY GIRL),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Baby Baby,포맨 (4MEN),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Back,인피니트,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Bad Boy,Red Velvet (레드벨벳),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Be My Baby,원더걸스,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Beautiful,Crush,20대 30대,남,R&B,달달,혼자,데이트
+Beautiful Day,어반자카파,20대 30대,남/여,발라드,애절한,그룹,감성충전
+Blueming,아이유 (IU),20대 30대,여,발라드,애절한,혼자,감성충전
+Blue Moon,엔플라잉 (N.Flying),20대 30대,남,락,신나는,그룹,분위기 띄우기
+Blue Valentine,NMIXX,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Bluffin',Jack Gray,10대 20대,남,힙합,신나는,혼자,분위기 띄우기
+Boom Boom Bass,RIIZE,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Boys And Girls (feat. Babylon),지코 (ZICO),10대 20대,남,힙합,신나는,듀엣,분위기 띄우기
+Buddy,LUCY,20대 30대,남,락,신나는,그룹,분위기 띄우기
+Butter,방탄소년단,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+CALL ME BABY,EXO,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+CEREMONY,Stray Kids (스트레이 키즈),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+CHEER UP,TWICE (트와이스),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Candy,NCT DREAM,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Candy (캔디),H.O.T.,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Casualty Of Love,Jessie J,10대 20대,여,댄스,신나는,혼자,분위기 띄우기
+Celebrity,아이유 (IU),20대 30대,여,발라드,애절한,혼자,감성충전
+Cereal (Feat. ZICO),Crush,20대 30대,남,R&B,달달,듀엣,데이트
+Chk Chk Boom,Stray Kids (스트레이 키즈),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Chroma Drift,PLAVE,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Circular OP.2 (Restored),엠씨더맥스 (M.C the MAX),20대 30대,남,발라드,애절한,그룹,고음어필
+Come Back Home,2NE1,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Congratulations,DAY6 (데이식스),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Cookie,NewJeans,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Counting Stars (Feat. Beenzino),BE'O (비오),10대 20대,남,힙합,신나는,듀엣,분위기 띄우기
+D-day (Feat. 기리보이),Hoody (후디),20대 30대,여,R&B,달달,듀엣,데이트
+D.D.D,더보이즈 (THE BOYZ),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+DNA,방탄소년단,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+DOC와 춤을,DJ DOC,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+DINOSAUR,AKMU (악뮤),20대 30대,남/여,발라드,애절한,그룹,감성충전
+Dali‚ Van‚ Picasso,빈지노 (Beenzino),10대 20대,남,힙합,신나는,혼자,분위기 띄우기
+Dank,박재범,10대 20대,남,힙합,신나는,혼자,분위기 띄우기
+Dash,PLAVE,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Devil,SUPER JUNIOR (슈퍼주니어),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Dirty Work,aespa,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Ditto,NewJeans,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Do It,Stray Kids (스트레이 키즈),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+"Do It For Love (Feat. 죠지)",THAMA,20대 30대,남,발라드,달달,듀엣,데이트
+Do or Die,임영웅,30대 40대 50대+,여,트로트,달달,혼자,감성충전
+Dolphin,오마이걸 (OH MY GIRL),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Dreams Come True,aespa,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Dun Dun Dance,오마이걸 (OH MY GIRL),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Dynamite,방탄소년단,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Décalcomanie (데칼코마니),마마무 (Mamamoo),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+"Earth, Wind & Fire",BOYNEXTDOOR,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Either Way,IVE (아이브),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+ELEVEN,IVE (아이브),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+ENDLESS,플라워,20대 30대,남,락,신나는,혼자,분위기 띄우기
+ERROR 405,정동원 (JD1),40대 50대+,여,트로트,신나는,혼자,분위기 띄우기
+Even if,헤이즈 (Heize),20대 30대,여,R&B,달달,혼자,데이트
+Everybody,SHINee (샤이니),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Everytime,펀치 (Punch),20대 30대,여,발라드,애절한,혼자,감성충전
+FAKE LOVE,방탄소년단,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+FANTASTIC BABY,BIGBANG (빅뱅),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+FEEL IT ON ME,Jessie J,10대 20대,여,댄스,신나는,혼자,분위기 띄우기
+FIESTA,IZ*ONE (아이즈원),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+FOREVER 1,소녀시대 (GIRLS' GENERATION),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+FORMULA,ALPHA DRIVE ONE (알파드라이브원),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+FRIEND THE END,볼빨간사춘기,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Fadeaway,BOYNEXTDOOR,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Fame,RIIZE,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Fan,에픽하이 (EPIK HIGH),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Fiction,비스트 (Beast),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Fine,소찬휘,20대 30대,여,발라드,애절한,혼자,감성충전
+Fine,태연 (TAEYEON),20대 30대,여,발라드,애절한,혼자,감성충전
+Flare,LUCY,20대 30대,남,락,신나는,그룹,분위기 띄우기
+Fly Away,에일리(Ailee),20대 30대,여,발라드,애절한,혼자,고음어필
+Fly Up,RIIZE,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+For You,엠씨더맥스 (M.C the MAX),20대 30대,남,발라드,애절한,그룹,고음어필
+Forever Young,BLACKPINK,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Friday Night,지오디 (god),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+GANADARA (Feat. 아이유),박재범,10대 20대,남,힙합,신나는,듀엣,분위기 띄우기
+Gee,소녀시대 (GIRLS' GENERATION),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Get A Guitar,RIIZE,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Ghost,Stray Kids (스트레이 키즈),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Girls Like Me (Explicit Ver.),제시 (Jessi),10대 20대,여,댄스,신나는,혼자,분위기 띄우기
+Give Love,AKMU (악뮤),20대 30대,남/여,발라드,달달,그룹,데이트
+God′s Plan (feat. Babylon),버벌진트 (Verbal Jint),10대 20대,남,힙합,신나는,듀엣,분위기 띄우기
+Good Boy Gone Bad,투모로우바이투게더,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Good Thing,i-dle (아이들),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+"GOOD STUFF (KARINA Solo)",aespa,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Greatest Moment,서은광 (비투비),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+HAPPY,DAY6 (데이식스),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+HBD,세븐틴 (SEVENTEEN),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+HOME,그린베이지 (greenbeige),20대 30대,남,락,신나는,혼자,분위기 띄우기
+HOT,LE SSERAFIM (르세라핌),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Hands Up,2PM,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Hate That I Love You,Rihanna,20대 30대,남,발라드,달달,혼자,데이트
+Heartbeat,2PM,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Higher (Feat. 이루마),에일리(Ailee),20대 30대,여,발라드,애절한,듀엣,고음어필
+Hollywood Action,BOYNEXTDOOR,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Home,임영웅,30대 40대 50대+,여,트로트,달달,혼자,감성충전
+Honey,카라 (Kara),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+How Sweet,NewJeans,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Hug (포옹),동방신기 (TVXQ!),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Hype Boy,NewJeans,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+I (Feat. 버벌진트),태연 (TAEYEON),20대 30대,여,발라드,애절한,듀엣,감성충전
+I AM,IVE (아이브),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+I DON'T CARE,2NE1,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+I Feel Good,BOYNEXTDOOR,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+I GOT A BOY,소녀시대 (GIRLS' GENERATION),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+I Love My Body,화사 (HWASA),20대 30대,여,발라드,달달,혼자,데이트
+I Love U,성시경,20대 30대,남,발라드,달달,혼자,데이트
+I Love You,차태현,20대 30대,남,발라드,달달,혼자,데이트
+I Love You,포지션,20대 30대,남,발라드,달달,혼자,데이트
+I Love You 3000,Stephanie Poetri,20대 30대,남,발라드,달달,혼자,데이트
+I WANT IT,STAYC (스테이씨),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+I'm In Love,라디 (Ra. D),20대 30대,남,발라드,달달,혼자,데이트
+I'm your man (Kor ver.),2PM,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+ICU (쉬어가도 돼),aespa,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+IDOL,방탄소년단,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+IF YOU,에일리(Ailee),20대 30대,여,발라드,애절한,혼자,고음어필
+In My Head,Stray Kids (스트레이 키즈),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+INSIDE OUT,DAY6 (데이식스),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Island,PLAVE,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+"Jam & Butterfly (Feat. Crush, eaJ)",DPR LIVE,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Kill This Love,BLACKPINK,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Kissing You,소녀시대 (GIRLS' GENERATION),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Kitsch,IVE (아이브),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Knife,엔하이픈 (ENHYPEN),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Ko Ko Bop,EXO,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+LATATA,i-dle (아이들),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Last Romeo,인피니트,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+"Left and Right (Feat. Jung Kook of BTS)",방탄소년단,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Lemon Drop,ATEEZ(에이티즈),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Life Goes On,방탄소년단,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Life′s Too Short (English Ver.),aespa,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+Like You,Hoody (후디),20대 30대,여,R&B,달달,혼자,데이트
+LIT,저스디스 (JUSTHIS),10대 20대,남,힙합,신나는,혼자,분위기 띄우기
+Live My Life,aespa,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+London Boy,임영웅,30대 40대 50대+,여,트로트,달달,혼자,감성충전
+Lonely Night,부활,20대 30대,남,락,신나는,혼자,분위기 띄우기
+Loosing Control,넬 (NELL),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Lose You To Love Me,Selena Gomez,20대 30대,남,발라드,달달,혼자,데이트
+Love,Keyshia Cole,20대 30대,남,발라드,달달,혼자,데이트
+Love 119,RIIZE,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Love Actually,엠씨더맥스 (M.C the MAX),20대 30대,남,발라드,달달,그룹,데이트
+Love Ballad,브라운 아이드 소울,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Love Forever,터보,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Love Is... (3+3=0),터보,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+Love Lee,AKMU (악뮤),20대 30대,남/여,발라드,달달,그룹,데이트
+Love Like This,Jacob Banks,20대 30대,남,발라드,달달,혼자,데이트
+LOVE DIVE,IVE (아이브),10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+LOVE ME,Zion.T,20대 30대,남,R&B,달달,혼자,데이트
+LOVE ME LOVE ME,WINNER,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+LOVE ME RIGHT,EXO,10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+LOVE YA!,혁오 (HYUKOH),10대 20대,남,댄스,신나는,그룹,분위기 띄우기
+마지막처럼,BLACKPINK,10대 20대,여,댄스,신나는,그룹,분위기 띄우기
+밤편지,아이유 (IU),20대 30대,여,발라드,잔잔,혼자,감성충전
+사건의 지평선,윤하,20대 30대,여,발라드,애절한,혼자,고음어필
+사랑인가 봐,멜로망스,20대 30대,남,발라드,달달,혼자,데이트
+사랑 그 놈,바이브&김태우,20대 30대,남,발라드,애절한,듀엣,감성충전
+서울의 달,김건모,20대 30대,남,발라드,잔잔,혼자,감성충전
+소녀,이문세,20대 30대,남,발라드,잔잔,혼자,감성충전
+솔아 솔아 푸르른 솔아,조항조,40대 50대+,남,트로트,애절한,혼자,감성충전
+아 대한민국,싸이,20대 30대,남/여,댄스,신나는,그룹,분위기 띄우기
+아모르파티,김연자,40대 50대+,여,트로트,신나는,혼자,분위기 띄우기
+아무노래,지코 (ZICO),10대 20대,남,힙합,신나는,혼자,분위기 띄우기
+아이와 나의 바다,아이유 (IU),20대 30대,여,발라드,잔잔,혼자,감성충전
+야생화,박효신,20대 30대,남,발라드,애절한,혼자,고음어필
+어디에도,엠씨더맥스 (M.C the MAX),20대 30대,남,발라드,애절한,그룹,고음어필
+어떻게 이별까지 사랑하겠어 널 사랑하는 거지,악동뮤지션,20대 30대,남/여,발라드,잔잔,듀엣,감성충전
+영웅,임영웅,30대 40대 50대+,남,트로트,신나는,혼자,분위기 띄우기
+우연히 봄,로꼬&유주,20대 30대,남,발라드,달달,듀엣,데이트
+이 밤,양다일,20대 30대,남,발라드,잔잔,혼자,감성충전
+인연,이선희,30대 40대 50대+,여,발라드,애절한,혼자,감성충전
+잊혀지다,K.Will(케이윌),20대 30대,남,발라드,우울한,혼자,감성충전
+잠이 오질 않네요,장범준,20대 30대,남,발라드,잔잔,혼자,감성충전
+처음부터 너와 나,볼빨간사춘기,10대 20대,여,발라드,달달,혼자,데이트
+천년의 사랑,박완규,20대 30대,남,발라드,애절한,혼자,고음어필
+취중진담,김동률,20대 30대,남,발라드,잔잔,혼자,감성충전
+커피 한잔 할래요,폴킴,20대 30대,남,발라드,달달,혼자,데이트
+하루하루,빅뱅 (BIGBANG),20대 30대,남,발라드,우울한,그룹,감성충전
+한숨,이하이,20대 30대,여,발라드,잔잔,혼자,감성충전
+희재,성시경,20대 30대,남,발라드,잔잔,혼자,감성충전`;
+
+// CSV 파싱 함수
+function parseCSV(csvString) {
+  const lines = csvString.trim().split('\n');
+  const headers = parseCSVLine(lines[0]);
+  const songs = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i]);
+    if (values.length >= 8) {
+      songs.push({
+        title: values[0],
+        artist: values[1],
+        나이: values[2],
+        성별: values[3],
+        장르: values[4],
+        분위기: values[5],
+        인원수: values[6],
+        상황: values[7]
+      });
+    }
+  }
+  return songs;
+}
+
+// CSV 라인 파싱 (따옴표 처리)
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
 // 노래 데이터베이스
-// 각 노래는 태그를 가지고 있어 상황에 맞는 추천이 가능합니다
+export const SONGS_DATABASE = parseCSV(CSV_DATA);
 
-export const SONGS_DATABASE = [
-  // ===== 신나는 노래 (에너지 높음) =====
-  {
-    title: "Dynamite",
-    artist: "BTS",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "medium",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["heating", "mood_change"]
-    }
-  },
-  {
-    title: "뿜뿜",
-    artist: "모모랜드",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "easy",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["heating", "mood_change"]
-    }
-  },
-  {
-    title: "Ring Ding Dong",
-    artist: "샤이니",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "medium",
-      groupSize: ["group"],
-      timeSlot: ["evening", "night"],
-      situation: ["heating"]
-    }
-  },
-  {
-    title: "Gee",
-    artist: "소녀시대",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "easy",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-  {
-    title: "Tell Me",
-    artist: "원더걸스",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "easy",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-  {
-    title: "Cheer Up",
-    artist: "트와이스",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "easy",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-  {
-    title: "빨간맛",
-    artist: "레드벨벳",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "medium",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["heating"]
-    }
-  },
-  {
-    title: "강남스타일",
-    artist: "싸이",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "easy",
-      groupSize: ["group"],
-      timeSlot: ["evening", "night"],
-      situation: ["heating", "mood_change"]
-    }
-  },
-  {
-    title: "BANG BANG BANG",
-    artist: "빅뱅",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "medium",
-      groupSize: ["group"],
-      timeSlot: ["night"],
-      situation: ["heating"]
-    }
-  },
-  {
-    title: "DDU-DU DDU-DU",
-    artist: "블랙핑크",
-    tags: {
-      mood: ["energetic"],
-      difficulty: "medium",
-      groupSize: ["group"],
-      timeSlot: ["night"],
-      situation: ["heating"]
-    }
-  },
-  {
-    title: "거북이",
-    artist: "다비치",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "easy",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["evening", "night", "dawn"],
-      situation: ["opening", "mood_change"]
-    }
-  },
-
-  // ===== 회식/그룹용 떼창곡 =====
-  {
-    title: "아모르파티",
-    artist: "김연자",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "easy",
-      groupSize: ["group"],
-      timeSlot: ["night", "dawn"],
-      situation: ["heating", "closing"]
-    }
-  },
-  {
-    title: "눈의 꽃",
-    artist: "박효신",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "hard",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing", "mood_change"]
-    }
-  },
-  {
-    title: "사랑안해",
-    artist: "백지영",
-    tags: {
-      mood: ["emotional", "energetic"],
-      difficulty: "hard",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["heating", "closing"]
-    }
-  },
-  {
-    title: "칵테일 사랑",
-    artist: "김종국",
-    tags: {
-      mood: ["fun", "energetic"],
-      difficulty: "medium",
-      groupSize: ["solo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["heating"]
-    }
-  },
-  {
-    title: "미쳐",
-    artist: "포미닛",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "medium",
-      groupSize: ["duo", "group"],
-      timeSlot: ["night"],
-      situation: ["heating"]
-    }
-  },
-  {
-    title: "오빠 딱 좋아",
-    artist: "유세윤",
-    tags: {
-      mood: ["fun"],
-      difficulty: "easy",
-      groupSize: ["group"],
-      timeSlot: ["night", "dawn"],
-      situation: ["heating", "mood_change"]
-    }
-  },
-  {
-    title: "불타오르네 (FIRE)",
-    artist: "BTS",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "medium",
-      groupSize: ["group"],
-      timeSlot: ["night"],
-      situation: ["heating"]
-    }
-  },
-  {
-    title: "촛불하나",
-    artist: "g.o.d",
-    tags: {
-      mood: ["fun", "emotional"],
-      difficulty: "easy",
-      groupSize: ["group"],
-      timeSlot: ["night", "dawn"],
-      situation: ["mood_change", "closing"]
-    }
-  },
-
-  // ===== 발라드/감성곡 =====
-  {
-    title: "사랑했지만",
-    artist: "김광석",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing", "mood_change"]
-    }
-  },
-  {
-    title: "겨울잠",
-    artist: "아이유",
-    tags: {
-      mood: ["calm", "emotional"],
-      difficulty: "medium",
-      groupSize: ["solo"],
-      timeSlot: ["dawn"],
-      situation: ["closing"]
-    }
-  },
-  {
-    title: "첫눈처럼 너에게 가겠다",
-    artist: "에일리",
-    tags: {
-      mood: ["emotional"],
-      difficulty: "hard",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing"]
-    }
-  },
-  {
-    title: "봄날",
-    artist: "BTS",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo", "group"],
-      timeSlot: ["evening", "night", "dawn"],
-      situation: ["closing", "mood_change"]
-    }
-  },
-  {
-    title: "야생화",
-    artist: "박효신",
-    tags: {
-      mood: ["emotional"],
-      difficulty: "hard",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing"]
-    }
-  },
-  {
-    title: "좋니",
-    artist: "윤종신",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "easy",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing", "mood_change"]
-    }
-  },
-  {
-    title: "사랑하기 때문에",
-    artist: "유재하",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["closing"]
-    }
-  },
-  {
-    title: "응급실",
-    artist: "izi",
-    tags: {
-      mood: ["emotional"],
-      difficulty: "hard",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing", "mood_change"]
-    }
-  },
-  {
-    title: "서시",
-    artist: "신성우",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "medium",
-      groupSize: ["solo", "group"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing", "mood_change"]
-    }
-  },
-
-  // ===== R&B / 힙합 =====
-  {
-    title: "벌써 일년",
-    artist: "브라운아이즈",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing", "mood_change"]
-    }
-  },
-  {
-    title: "가지마 가지마",
-    artist: "브라운아이즈",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing", "mood_change"]
-    }
-  },
-  {
-    title: "나였으면",
-    artist: "나얼",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "hard",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing"]
-    }
-  },
-  {
-    title: "No Make Up",
-    artist: "Zion.T",
-    tags: {
-      mood: ["calm", "fun"],
-      difficulty: "easy",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "mood_change"]
-    }
-  },
-  {
-    title: "꺼내 먹어요",
-    artist: "Zion.T",
-    tags: {
-      mood: ["calm", "emotional"],
-      difficulty: "easy",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing", "mood_change"]
-    }
-  },
-  {
-    title: "D (Half Moon)",
-    artist: "DEAN",
-    tags: {
-      mood: ["calm", "emotional"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["mood_change", "closing"]
-    }
-  },
-  {
-    title: "instagram",
-    artist: "DEAN",
-    tags: {
-      mood: ["calm", "emotional"],
-      difficulty: "medium",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["mood_change"]
-    }
-  },
-  {
-    title: "아무노래",
-    artist: "지코",
-    tags: {
-      mood: ["fun", "energetic"],
-      difficulty: "easy",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-  {
-    title: "Okey Dokey",
-    artist: "송민호, 지코",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "hard",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["night"],
-      situation: ["heating", "mood_change"]
-    }
-  },
-  {
-    title: "겁",
-    artist: "송민호",
-    tags: {
-      mood: ["emotional", "energetic"],
-      difficulty: "hard",
-      groupSize: ["solo"],
-      timeSlot: ["night"],
-      situation: ["mood_change", "closing"]
-    }
-  },
-  {
-    title: "HER",
-    artist: "블락비",
-    tags: {
-      mood: ["fun", "energetic"],
-      difficulty: "medium",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-
-  // ===== 첫 곡/오프닝용 =====
-  {
-    title: "나만 바라봐",
-    artist: "태양",
-    tags: {
-      mood: ["fun", "energetic"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-  {
-    title: "Love Dive",
-    artist: "아이브",
-    tags: {
-      mood: ["fun", "energetic"],
-      difficulty: "medium",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-  {
-    title: "Hype Boy",
-    artist: "뉴진스",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "easy",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening"]
-    }
-  },
-  {
-    title: "Super Shy",
-    artist: "뉴진스",
-    tags: {
-      mood: ["fun"],
-      difficulty: "easy",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-  {
-    title: "인기",
-    artist: "아이유",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "easy",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening"]
-    }
-  },
-  {
-    title: "Celebrity",
-    artist: "아이유",
-    tags: {
-      mood: ["fun", "energetic"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-  {
-    title: "Bad Boy",
-    artist: "레드벨벳",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "medium",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening"]
-    }
-  },
-  {
-    title: "LOVE SCENARIO",
-    artist: "iKON",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "easy",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "mood_change"]
-    }
-  },
-  {
-    title: "After LIKE",
-    artist: "아이브",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "medium",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-  {
-    title: "Dolphin",
-    artist: "오마이걸",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "easy",
-      groupSize: ["duo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-
-  // ===== 분위기 전환용 =====
-  {
-    title: "취중진담",
-    artist: "김동률",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "medium",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["mood_change", "closing"]
-    }
-  },
-  {
-    title: "비와 당신",
-    artist: "김정민",
-    tags: {
-      mood: ["emotional"],
-      difficulty: "hard",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["mood_change"]
-    }
-  },
-  {
-    title: "사느라 사랑하느라",
-    artist: "김현철",
-    tags: {
-      mood: ["calm"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["mood_change"]
-    }
-  },
-  {
-    title: "아틀란티스 소녀",
-    artist: "보아",
-    tags: {
-      mood: ["fun", "energetic"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "mood_change"]
-    }
-  },
-  {
-    title: "사건의 지평선",
-    artist: "윤하",
-    tags: {
-      mood: ["emotional", "energetic"],
-      difficulty: "hard",
-      groupSize: ["solo", "group"],
-      timeSlot: ["night", "dawn"],
-      situation: ["mood_change", "closing"]
-    }
-  },
-  {
-    title: "너의 모든 순간",
-    artist: "성시경",
-    tags: {
-      mood: ["calm", "emotional"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["mood_change", "closing"]
-    }
-  },
-
-  // ===== 새벽감성 =====
-  {
-    title: "널 사랑하지 않아",
-    artist: "어반 자카파",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["dawn"],
-      situation: ["closing"]
-    }
-  },
-  {
-    title: "우리가 헤어진 진짜 이유",
-    artist: "유승우",
-    tags: {
-      mood: ["calm", "emotional"],
-      difficulty: "easy",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing", "mood_change"]
-    }
-  },
-  {
-    title: "서울의 달",
-    artist: "김건모",
-    tags: {
-      mood: ["calm", "emotional"],
-      difficulty: "medium",
-      groupSize: ["solo", "group"],
-      timeSlot: ["dawn"],
-      situation: ["closing"]
-    }
-  },
-
-  // ===== 커플용 =====
-  {
-    title: "썸",
-    artist: "소유, 정기고",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "easy",
-      groupSize: ["duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "mood_change"]
-    }
-  },
-  {
-    title: "밤편지",
-    artist: "아이유",
-    tags: {
-      mood: ["calm", "emotional"],
-      difficulty: "medium",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["mood_change", "closing"]
-    }
-  },
-  {
-    title: "우주를 줄게",
-    artist: "볼빨간사춘기",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "easy",
-      groupSize: ["solo", "duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening"]
-    }
-  },
-  {
-    title: "All For You",
-    artist: "서인국, 정은지",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "easy",
-      groupSize: ["duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "mood_change"]
-    }
-  },
-  {
-    title: "Dream",
-    artist: "수지, 백현",
-    tags: {
-      mood: ["calm", "emotional"],
-      difficulty: "easy",
-      groupSize: ["duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "closing"]
-    }
-  },
-  {
-    title: "내 손을 잡아",
-    artist: "아이유",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "easy",
-      groupSize: ["duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "mood_change"]
-    }
-  },
-  {
-    title: "어떻게 이별까지 사랑하겠어",
-    artist: "악동뮤지션",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "medium",
-      groupSize: ["duo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing"]
-    }
-  },
-
-  // ===== 친구모임용 =====
-  {
-    title: "거짓말",
-    artist: "빅뱅",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "medium",
-      groupSize: ["solo", "group"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening", "heating"]
-    }
-  },
-  {
-    title: "Fantastic Baby",
-    artist: "빅뱅",
-    tags: {
-      mood: ["energetic"],
-      difficulty: "medium",
-      groupSize: ["group"],
-      timeSlot: ["night"],
-      situation: ["heating"]
-    }
-  },
-  {
-    title: "아주 NICE",
-    artist: "세븐틴",
-    tags: {
-      mood: ["energetic", "fun"],
-      difficulty: "medium",
-      groupSize: ["group"],
-      timeSlot: ["evening", "night"],
-      situation: ["heating"]
-    }
-  },
-  {
-    title: "눈, 코, 입",
-    artist: "태양",
-    tags: {
-      mood: ["emotional"],
-      difficulty: "medium",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing"]
-    }
-  },
-  {
-    title: "삐딱하게",
-    artist: "GD",
-    tags: {
-      mood: ["fun", "energetic"],
-      difficulty: "hard",
-      groupSize: ["solo"],
-      timeSlot: ["night"],
-      situation: ["heating", "mood_change"]
-    }
-  },
-  {
-    title: "마지막 인사",
-    artist: "빅뱅",
-    tags: {
-      mood: ["emotional"],
-      difficulty: "medium",
-      groupSize: ["solo", "group"],
-      timeSlot: ["night", "dawn"],
-      situation: ["closing"]
-    }
-  },
-  {
-    title: "소주 한 잔",
-    artist: "임창정",
-    tags: {
-      mood: ["emotional", "fun"],
-      difficulty: "easy",
-      groupSize: ["solo", "group"],
-      timeSlot: ["night", "dawn"],
-      situation: ["heating", "closing"]
-    }
-  },
-  {
-    title: "한숨",
-    artist: "이하이",
-    tags: {
-      mood: ["emotional", "calm"],
-      difficulty: "medium",
-      groupSize: ["solo"],
-      timeSlot: ["night", "dawn"],
-      situation: ["mood_change", "closing"]
-    }
-  },
-  {
-    title: "잔소리",
-    artist: "아이유, 슬옹",
-    tags: {
-      mood: ["fun", "calm"],
-      difficulty: "easy",
-      groupSize: ["duo"],
-      timeSlot: ["evening", "night"],
-      situation: ["opening"]
-    }
-  }
-];
-
-// 태그 상수 정의
+// 유효한 태그 값 정의
 export const TAGS = {
-  mood: {
-    energetic: "신나는",
-    calm: "잔잔한",
-    fun: "재미있는",
-    emotional: "감성적인"
-  },
-  difficulty: {
-    easy: "쉬움",
-    medium: "보통",
-    hard: "어려움"
-  },
-  groupSize: {
-    solo: "혼자",
-    duo: "둘이서",
-    group: "여럿이서"
-  },
-  timeSlot: {
-    evening: "저녁",
-    night: "밤",
-    dawn: "새벽"
-  },
-  situation: {
-    opening: "첫 곡",
-    heating: "분위기 띄우기",
-    closing: "마무리",
-    mood_change: "분위기 전환"
-  }
+  나이: ['10대', '20대', '30대', '40대', '50대+'],
+  성별: ['남', '여', '남/여'],
+  장르: ['발라드', '힙합', '댄스', '락', '트로트', 'R&B'],
+  분위기: ['잔잔', '달달', '신나는', '우울한', '애절한'],
+  인원수: ['혼자', '듀엣', '그룹'],
+  상황: ['감성충전', '분위기 띄우기', '데이트', '고음어필']
 };
 
-export const validateSongs = (songs) => {
-  const tagSets = {
-    mood: new Set(Object.keys(TAGS.mood)),
-    difficulty: new Set(Object.keys(TAGS.difficulty)),
-    groupSize: new Set(Object.keys(TAGS.groupSize)),
-    timeSlot: new Set(Object.keys(TAGS.timeSlot)),
-    situation: new Set(Object.keys(TAGS.situation))
-  };
-
+// 노래 데이터 검증 (개발용)
+export function validateSongs(songs) {
   const issues = [];
   songs.forEach((song, index) => {
-    const label = `${song.title || "제목 없음"} - ${song.artist || "아티스트 없음"} (#${index + 1})`;
-
-    if (!song.title || !song.artist) {
-      issues.push(`${label}: title/artist 누락`);
-    }
-
-    if (!song.tags) {
-      issues.push(`${label}: tags 누락`);
-      return;
-    }
-
-    const { mood, difficulty, groupSize, timeSlot, situation } = song.tags;
-
-    const ensureArrayTags = (key, values) => {
-      if (!Array.isArray(values) || values.length === 0) {
-        issues.push(`${label}: ${key} 태그 누락`);
-        return;
+    Object.keys(TAGS).forEach(field => {
+      const value = song[field];
+      if (value && !TAGS[field].some(v => value.includes(v))) {
+        issues.push(`[${index}] ${song.title}: ${field}='${value}' 유효하지 않음`);
       }
-      values.forEach(value => {
-        if (!tagSets[key].has(value)) {
-          issues.push(`${label}: ${key} 태그 오류 (${value})`);
-        }
-      });
-    };
-
-    ensureArrayTags("mood", mood);
-    ensureArrayTags("groupSize", groupSize);
-    ensureArrayTags("timeSlot", timeSlot);
-    ensureArrayTags("situation", situation);
-
-    if (!tagSets.difficulty.has(difficulty)) {
-      issues.push(`${label}: difficulty 태그 오류 (${difficulty || "없음"})`);
-    }
+    });
   });
-
   return issues;
-};
+}
