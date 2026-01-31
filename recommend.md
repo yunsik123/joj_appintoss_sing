@@ -147,9 +147,37 @@ recommend(userSelection, count = 5) {
 
 1. **유연한 매칭**: 모든 조건이 안 맞아도 핵심 조건만 맞으면 추천
 2. **우선순위 명확**: 분위기와 상황이 가장 중요 (노래방 특성 반영)
-3. **다양성 확보**: 상위 곡들 중 랜덤 선택으로 매번 다른 추천
+3. **다양성 확보**: 상위 30곡 중 랜덤 선택으로 매번 다른 추천
 4. **부분 매칭 지원**: 일부 조건만 맞아도 점수 부여
 5. **항상 결과 보장**: 최소 점수 기준으로 항상 추천 가능
+6. **중복 방지**: 다시 추천받기 시 이미 추천된 곡 제외
+
+## 🔄 다시 추천받기 (중복 방지)
+
+앱은 추천된 곡 목록을 추적하여 중복을 방지합니다:
+
+```javascript
+// app.js
+this.recommendedSongs = []; // 추천 이력
+
+// 추천 시 제외 목록 전달
+const recommendations = recommender.recommend(
+    selection, 
+    5, 
+    this.recommendedSongs  // 이전 추천 곡 제외
+);
+
+// 추천된 곡 이력에 추가
+recommendations.forEach(song => {
+    this.recommendedSongs.push(song.title);
+});
+```
+
+**동작:**
+- 1회 추천: 상위 30곡 중 5곡 (A, B, C, D, E)
+- 2회 추천: A~E 제외, 나머지 25곡 중 5곡 (F, G, H, I, J)
+- 3회 추천: A~J 제외, 나머지 20곡 중 5곡
+- "처음부터" 버튼: 추천 이력 초기화
 
 ## 🔧 가중치 조정 가능
 
