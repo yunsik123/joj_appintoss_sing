@@ -2,6 +2,34 @@
 import { SONGS_DATABASE, TAGS, validateSongs } from './songs.js';
 import { SongRecommender } from './recommend.js';
 
+// Toast 알림 함수 (시스템 alert 대체)
+function showToast(message, duration = 3000) {
+    // 기존 toast 제거
+    const existingToast = document.querySelector('.custom-toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    // Toast 요소 생성
+    const toast = document.createElement('div');
+    toast.className = 'custom-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // 애니메이션 시작
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+
+    // 자동으로 사라짐
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, duration);
+}
+
 const recommender = new SongRecommender(SONGS_DATABASE);
 
 // 개발 환경에서 노래 데이터 검증
@@ -184,15 +212,15 @@ class KaraokeApp {
     // 프로필 검증
     validateProfile() {
         if (!this.userData.유저성별) {
-            alert('성별을 선택해주세요');
+            showToast('성별을 선택해주세요');
             return false;
         }
         if (!this.userData.유저나이) {
-            alert('연령대를 선택해주세요');
+            showToast('연령대를 선택해주세요');
             return false;
         }
         if (!this.userData.방문빈도) {
-            alert('방문 빈도를 선택해주세요');
+            showToast('방문 빈도를 선택해주세요');
             return false;
         }
         return true;
@@ -201,11 +229,11 @@ class KaraokeApp {
     // 나이+가수성별 검증
     validateAgeGender() {
         if (this.userData.나이 === undefined) {
-            alert('노래 연령대를 선택해주세요');
+            showToast('노래 연령대를 선택해주세요');
             return false;
         }
         if (this.userData.가수성별 === undefined) {
-            alert('가수 성별을 선택해주세요');
+            showToast('가수 성별을 선택해주세요');
             return false;
         }
         return true;
@@ -214,11 +242,11 @@ class KaraokeApp {
     // 장르+분위기 검증
     validateGenreMood() {
         if (this.userData.장르 === undefined) {
-            alert('장르를 선택해주세요');
+            showToast('장르를 선택해주세요');
             return false;
         }
         if (this.userData.분위기 === undefined) {
-            alert('분위기를 선택해주세요');
+            showToast('분위기를 선택해주세요');
             return false;
         }
         return true;
@@ -227,11 +255,11 @@ class KaraokeApp {
     // 인원수+상황 검증
     validatePeopleSituation() {
         if (this.userData.인원수 === undefined) {
-            alert('인원수를 선택해주세요');
+            showToast('인원수를 선택해주세요');
             return false;
         }
         if (this.userData.상황 === undefined) {
-            alert('상황을 선택해주세요');
+            showToast('상황을 선택해주세요');
             return false;
         }
         return true;
