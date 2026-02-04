@@ -93,12 +93,40 @@ body::before {
   }
 }
 
+/* ===== 내비게이션 바 ===== */
+.nav-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+  padding: var(--spacing-sm) var(--spacing-md);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.nav-logo {
+  max-width: 480px;
+  margin: 0 auto;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: var(--glow-cyan);
+}
+
 /* ===== 앱 컨테이너 ===== */
 .app-container {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
+  padding-top: 60px;
+  /* 네비게이션 바 높이만큼 여백 추가 */
 }
 
 /* ===== 화면 공통 ===== */

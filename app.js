@@ -113,108 +113,10 @@ class KaraokeApp {
             this.resetAndRestart();
         });
 
-        // 후기 버튼들
-        document.getElementById('btn-save-review')?.addEventListener('click', () => {
-            this.saveReview();
-        });
 
-        document.getElementById('btn-view-reviews')?.addEventListener('click', () => {
-            this.toggleReviews();
-        });
     }
 
-    // 후기 저장
-    saveReview() {
-        const reviewInput = document.getElementById('reviewInput');
-        const reviewText = reviewInput.value.trim();
 
-        if (!reviewText) {
-            alert('후기를 입력해주세요');
-            return;
-        }
-
-        // localStorage에서 기존 후기 가져오기
-        const reviews = this.getReviews();
-
-        // 새 후기 추가
-        const newReview = {
-            id: Date.now(),
-            text: reviewText,
-            date: new Date().toLocaleString('ko-KR'),
-            conditions: {
-                나이: this.userData.나이,
-                가수성별: this.userData.가수성별,
-                장르: this.userData.장르,
-                분위기: this.userData.분위기,
-                인원수: this.userData.인원수,
-                상황: this.userData.상황
-            }
-        };
-
-        reviews.unshift(newReview);
-
-        // localStorage에 저장
-        localStorage.setItem('karaokeReviews', JSON.stringify(reviews));
-
-        // 입력창 초기화
-        reviewInput.value = '';
-
-        alert('후기가 저장되었습니다!');
-
-        // 후기 목록 업데이트
-        this.displayReviews();
-    }
-
-    // 후기 가져오기
-    getReviews() {
-        const reviewsJson = localStorage.getItem('karaokeReviews');
-        return reviewsJson ? JSON.parse(reviewsJson) : [];
-    }
-
-    // 후기 목록 토글
-    toggleReviews() {
-        const reviewsList = document.getElementById('reviewsList');
-
-        if (reviewsList.style.display === 'none') {
-            this.displayReviews();
-            reviewsList.style.display = 'block';
-        } else {
-            reviewsList.style.display = 'none';
-        }
-    }
-
-    // 후기 표시
-    displayReviews() {
-        const reviews = this.getReviews();
-        const container = document.getElementById('reviewsContainer');
-
-        if (reviews.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">저장된 후기가 없습니다</p>';
-            return;
-        }
-
-        container.innerHTML = reviews.map(review => `
-            <div class="review-item">
-                <div class="review-item-date">${review.date}</div>
-                <div class="review-item-text">${review.text}</div>
-                <button class="review-item-delete" onclick="app.deleteReview(${review.id})">삭제</button>
-            </div>
-        `).join('');
-    }
-
-    // 후기 삭제
-    deleteReview(reviewId) {
-        if (!confirm('이 후기를 삭제하시겠습니까?')) {
-            return;
-        }
-
-        let reviews = this.getReviews();
-        reviews = reviews.filter(r => r.id !== reviewId);
-        localStorage.setItem('karaokeReviews', JSON.stringify(reviews));
-
-        this.displayReviews();
-        alert('후기가 삭제되었습니다');
-    }
 
     // 스플래시 화면 표시 (클릭하면 이동)
     showSplash() {
