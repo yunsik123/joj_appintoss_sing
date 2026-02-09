@@ -121,7 +121,16 @@ npm run dev
 - **기능스킴**: `intoss://joj-miniapp1` (딥링크로 앱 실행)
 - **브랜드 아이콘**: `public/logo.png`
 - **네비게이션바**: 뒤로가기 버튼 활성화
-- `granite.config.ts` 설정 → `.ait` 파일로 빌드 후 배포
+- `granite.config.ts` 설정 → `npm run ait:build` → `.ait` 파일 생성 후 배포
+
+### 앱 내 기능 (딥링크)
+
+| 한국어 기능 이름 | 영어 기능 이름 | 이동 URL |
+|----------------|--------------|---------|
+| 노래 추천받기 | Song Recommendation | `intoss://joj-miniapp1/recommend` |
+
+- `/recommend` → 스플래시 스킵, 프로필 입력 화면으로 바로 이동
+- 딥링크 처리 로직: `app.js` → `handleDeepLink()`
 
 ## ⚙️ 확장 가능성
 
