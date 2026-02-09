@@ -80,7 +80,25 @@ class KaraokeApp {
 
     init() {
         this.bindEvents();
-        this.showSplash();
+        this.handleDeepLink();
+    }
+
+    // 딥링크 처리 (intoss://joj-miniapp1/screenName)
+    handleDeepLink() {
+        const path = window.location.pathname.replace(/^\//, '');
+        const hash = window.location.hash.replace(/^#\/?/, '');
+        const route = path || hash;
+
+        switch (route) {
+            case 'recommend':
+                // 추천 시작 → 프로필 화면으로 바로 이동
+                this.goToScreen(1);
+                break;
+            default:
+                // 기본: 스플래시부터 시작
+                this.showSplash();
+                break;
+        }
     }
 
     bindEvents() {
