@@ -110,13 +110,22 @@ body::before {
 .nav-logo {
   max-width: 480px;
   margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 1.1rem;
   font-weight: 700;
   background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: var(--glow-cyan);
+}
+
+.nav-logo-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.6));
 }
 
 /* ===== 앱 컨테이너 ===== */
