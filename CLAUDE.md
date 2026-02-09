@@ -37,6 +37,7 @@ project3/
 ├── granite.config.ts # 앱인토스 설정 (기능스킴, 브랜드, 네비게이션바)
 ├── vite.config.js    # Vite 설정
 ├── package.json      # 의존성 설정
+├── toss123.md        # Apps In Toss 설치 가이드 메모
 ├── public/
 │   └── logo.png      # 앱 로고 이미지
 └── CLAUDE.md         # 프로젝트 문서
