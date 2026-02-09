@@ -6,7 +6,7 @@ export default defineConfig({
     brand: {
         displayName: '이곡어때',
         primaryColor: '#22D3EE', // Cyan 네온 컬러
-        icon: '/logo.svg', // 앱 로고 아이콘
+        icon: '/logo.png', // 앱 로고 아이콘
     },
     web: {
         host: 'localhost',
