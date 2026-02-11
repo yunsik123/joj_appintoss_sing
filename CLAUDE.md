@@ -129,9 +129,16 @@ npm run dev
 | 한국어 기능 이름 | 영어 기능 이름 | 이동 URL |
 |----------------|--------------|---------|
 | 노래 추천받기 | Song Recommendation | `intoss://joj-miniapp1/recommend` |
+| 프로필 입력 | Profile Input | `intoss://joj-miniapp1/profile` |
+| 나이/가수성별 선택 | Age & Gender | `intoss://joj-miniapp1/age-gender` |
+| 장르/분위기 선택 | Genre & Mood | `intoss://joj-miniapp1/genre-mood` |
+| 인원수/상황 선택 | People & Situation | `intoss://joj-miniapp1/people-situation` |
+| 추천 결과 | Result | `intoss://joj-miniapp1/result` |
 
-- `/recommend` → 스플래시 스킵, 프로필 입력 화면으로 바로 이동
 - 딥링크 처리 로직: `app.js` → `handleDeepLink()`
+- `/recommend`, `/profile` → 프로필 입력 화면으로 이동
+- `/age-gender`, `/genre-mood`, `/people-situation` → 각 선택 화면으로 이동
+- `/result` → 결과 화면으로 이동
 
 ## ⚙️ 확장 가능성
 

@@ -91,8 +91,25 @@ class KaraokeApp {
 
         switch (route) {
             case 'recommend':
-                // 추천 시작 → 프로필 화면으로 바로 이동
+            case 'profile':
+                // 프로필 입력 화면으로 이동
                 this.goToScreen(1);
+                break;
+            case 'age-gender':
+                // 나이 + 가수성별 선택 화면으로 이동
+                this.goToScreen(2);
+                break;
+            case 'genre-mood':
+                // 장르 + 분위기 선택 화면으로 이동
+                this.goToScreen(3);
+                break;
+            case 'people-situation':
+                // 인원수 + 상황 선택 화면으로 이동
+                this.goToScreen(4);
+                break;
+            case 'result':
+                // 결과 화면으로 이동
+                this.goToScreen(5);
                 break;
             default:
                 // 기본: 스플래시부터 시작
