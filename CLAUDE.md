@@ -120,8 +120,8 @@ npm run dev
 
 - **앱 이름**: `joj-miniapp1`
 - **기능스킴**: `intoss://joj-miniapp1` (딥링크로 앱 실행)
-- **브랜드 아이콘**: `public/logo.png`
-- **네비게이션바**: 뒤로가기 버튼 활성화
+- **브랜드 아이콘**: `public/logo.png` (네이티브 네비게이션 바 표시용으로 GitHub raw URL 사용)
+- **네비게이션바**: 뒤로가기 버튼 활성화, 앱 로고 아이콘 표시
 - `granite.config.ts` 설정 → `npm run ait:build` → `.ait` 파일 생성 후 배포
 
 ### 앱 내 기능 (딥링크)
