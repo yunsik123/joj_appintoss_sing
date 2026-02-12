@@ -38,6 +38,7 @@ project3/
 ├── vite.config.js    # Vite 설정
 ├── package.json      # 의존성 설정
 ├── toss123.md        # Apps In Toss 설치 가이드 메모
+├── logging.md        # Apps In Toss 로깅(이벤트) 가이드 참고 문서
 ├── public/
 │   └── logo.png      # 앱 로고 이미지
 └── CLAUDE.md         # 프로젝트 문서
@@ -139,6 +140,33 @@ npm run dev
 - `/recommend`, `/profile` → 프로필 입력 화면으로 이동
 - `/age-gender`, `/genre-mood`, `/people-situation` → 각 선택 화면으로 이동
 - `/result` → 결과 화면으로 이동
+
+## 📊 Analytics 로깅 (app.js)
+
+Apps In Toss SDK의 `Analytics`를 사용하여 사용자 행동을 추적합니다.
+
+```javascript
+import { Analytics } from '@apps-in-toss/web-framework';
+```
+
+### 이벤트 목록
+
+| 타입 | log_name | 설명 | 주요 파라미터 |
+|------|----------|------|-------------|
+| screen | `screen_{name}` | 화면 전환 | screen_index, screen_name |
+| click | `splash_click` | 스플래시 클릭 | button_name |
+| click | `option_select` | 옵션 버튼 선택 | field, value, screen_name |
+| click | `genre_tag_select` | 선호장르 선택/해제 | genre, action, selected_genres |
+| click | `next_button` | 다음 버튼 | button_name, screen_name, 선택값 |
+| click | `recommend_submit` | 추천받기 | selected_people, selected_situation |
+| click | `back_button` | 이전 버튼 | from_screen, to_screen |
+| click | `retry_recommend` | 다시 추천받기 | recommended_count |
+| click | `restart` | 처음부터 | screen_name |
+| screen | `recommend_result` | 추천 결과 화면 | total_songs, song_titles, conditions |
+| impression | `song_impression` | 추천 곡 노출 | song_title, song_artist, position |
+
+- 데이터 확인: Apps In Toss 콘솔 > **분석 > 이벤트**
+- SDK 버전 `0.0.26` 이상, 실제 런칭 후 데이터 집계
 
 ## ⚙️ 확장 가능성
 

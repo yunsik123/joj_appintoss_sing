@@ -1,6 +1,7 @@
 // 이곡어때 - 메인 앱 로직 (프로필 + 3단계 선택)
 import { SONGS_DATABASE, TAGS, validateSongs } from './songs.js';
 import { SongRecommender } from './recommend.js';
+import { Analytics } from '@apps-in-toss/web-framework';
 
 // Toast 알림 함수 (시스템 alert 대체)
 function showToast(message, duration = 3000) {
@@ -131,24 +132,50 @@ class KaraokeApp {
 
         // 다음 버튼들
         document.getElementById('btn-profile-next')?.addEventListener('click', () => {
+            Analytics.click({
+                log_name: 'next_button',
+                button_name: 'profile_next',
+                screen_name: 'profile'
+            });
             if (this.validateProfile()) {
                 this.goToScreen(2); // age-gender
             }
         });
 
         document.getElementById('btn-age-gender-next')?.addEventListener('click', () => {
+            Analytics.click({
+                log_name: 'next_button',
+                button_name: 'age_gender_next',
+                screen_name: 'age-gender',
+                selected_age: this.userData.나이 || '상관없음',
+                selected_gender: this.userData.가수성별 || '상관없음'
+            });
             if (this.validateAgeGender()) {
                 this.goToScreen(3); // genre-mood
             }
         });
 
         document.getElementById('btn-genre-mood-next')?.addEventListener('click', () => {
+            Analytics.click({
+                log_name: 'next_button',
+                button_name: 'genre_mood_next',
+                screen_name: 'genre-mood',
+                selected_genre: this.userData.장르 || '상관없음',
+                selected_mood: this.userData.분위기 || '상관없음'
+            });
             if (this.validateGenreMood()) {
                 this.goToScreen(4); // people-situation
             }
         });
 
         document.getElementById('btn-people-situation-next')?.addEventListener('click', () => {
+            Analytics.click({
+                log_name: 'recommend_submit',
+                button_name: 'recommend_button',
+                screen_name: 'people-situation',
+                selected_people: this.userData.인원수 || '상관없음',
+                selected_situation: this.userData.상황 || '상관없음'
+            });
             if (this.validatePeopleSituation()) {
                 this.showResults();
             }
@@ -156,23 +183,52 @@ class KaraokeApp {
 
         // 뒤로가기 버튼들
         document.getElementById('btn-age-gender-back')?.addEventListener('click', () => {
+            Analytics.click({
+                log_name: 'back_button',
+                button_name: 'age_gender_back',
+                from_screen: 'age-gender',
+                to_screen: 'profile'
+            });
             this.goToScreen(1); // profile
         });
 
         document.getElementById('btn-genre-mood-back')?.addEventListener('click', () => {
+            Analytics.click({
+                log_name: 'back_button',
+                button_name: 'genre_mood_back',
+                from_screen: 'genre-mood',
+                to_screen: 'age-gender'
+            });
             this.goToScreen(2); // age-gender
         });
 
         document.getElementById('btn-people-situation-back')?.addEventListener('click', () => {
+            Analytics.click({
+                log_name: 'back_button',
+                button_name: 'people_situation_back',
+                from_screen: 'people-situation',
+                to_screen: 'genre-mood'
+            });
             this.goToScreen(3); // genre-mood
         });
 
         // 결과 화면 버튼들
         document.getElementById('btn-retry')?.addEventListener('click', () => {
+            Analytics.click({
+                log_name: 'retry_recommend',
+                button_name: 'retry_button',
+                screen_name: 'result',
+                recommended_count: this.recommendedSongs.length
+            });
             this.showResults();
         });
 
         document.getElementById('btn-restart')?.addEventListener('click', () => {
+            Analytics.click({
+                log_name: 'restart',
+                button_name: 'restart_button',
+                screen_name: 'result'
+            });
             this.resetAndRestart();
         });
 
@@ -188,6 +244,10 @@ class KaraokeApp {
         // 스플래시 화면 클릭 시 다음으로
         const splashScreen = document.getElementById('screen-splash');
         const splashClickHandler = () => {
+            Analytics.click({
+                log_name: 'splash_click',
+                button_name: 'splash_screen'
+            });
             this.goToScreen(1); // profile
             splashScreen.removeEventListener('click', splashClickHandler);
         };
@@ -209,6 +269,13 @@ class KaraokeApp {
         }
 
         this.currentScreen = screenIndex;
+
+        // 화면 전환 로깅
+        Analytics.screen({
+            log_name: `screen_${screenName}`,
+            screen_index: screenIndex,
+            screen_name: screenName
+        });
     }
 
     // 단일 선택 처리
@@ -226,6 +293,14 @@ class KaraokeApp {
         // 현재 버튼 선택
         btn.classList.add('selected');
         this.userData[field] = value === 'null' ? null : value;
+
+        // 선택 클릭 로깅
+        Analytics.click({
+            log_name: 'option_select',
+            field: field,
+            value: value === 'null' ? '상관없음' : value,
+            screen_name: this.screens[this.currentScreen]
+        });
     }
 
     // 장르 복수 선택 처리
@@ -242,6 +317,14 @@ class KaraokeApp {
         } else {
             this.userData.선호장르 = this.userData.선호장르.filter(g => g !== value);
         }
+
+        // 장르 선택/해제 로깅
+        Analytics.click({
+            log_name: 'genre_tag_select',
+            genre: value,
+            action: tag.classList.contains('selected') ? 'select' : 'deselect',
+            selected_genres: this.userData.선호장르.join(',')
+        });
     }
 
     // 프로필 검증
@@ -363,7 +446,7 @@ class KaraokeApp {
 
         // 결과 표시
         resultList.innerHTML = recommendations.map((song, index) => `
-            <div class="result-item">
+            <div class="result-item" data-song-title="${song.title}" data-song-artist="${song.artist}" data-position="${index + 1}">
                 <div class="result-number">${index + 1}</div>
                 <div class="result-info">
                     <div class="result-song-title">${song.title}</div>
@@ -375,6 +458,33 @@ class KaraokeApp {
                 </div>
             </div>
         `).join('');
+
+        // 추천 결과 전체 로깅
+        Analytics.screen({
+            log_name: 'recommend_result',
+            total_songs: recommendations.length,
+            song_titles: recommendations.map(s => s.title).join(','),
+            conditions: JSON.stringify(selection)
+        });
+
+        // 각 추천 곡 노출 이벤트 (IntersectionObserver)
+        resultList.querySelectorAll('.result-item').forEach(item => {
+            const observer = new IntersectionObserver(
+                ([entry]) => {
+                    if (entry.isIntersecting) {
+                        Analytics.impression({
+                            log_name: 'song_impression',
+                            song_title: item.dataset.songTitle,
+                            song_artist: item.dataset.songArtist,
+                            position: item.dataset.position
+                        });
+                        observer.disconnect();
+                    }
+                },
+                { threshold: 0.1 }
+            );
+            observer.observe(item);
+        });
     }
 
     // 처음부터 다시 시작
